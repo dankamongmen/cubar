@@ -1239,12 +1239,20 @@ static void
 free_devices(cudadev *d){
 	while(d){
 		cudadev *t = d;
+		int cerr;
 
 		d = d->next;
 		free(t->devname);
 		free_maps(t->map);
-		cuMemFree(t->resarray);
-		cuCtxDestroy(t->ctx);
+		if((cerr = cuMemFree(t->resarray)) != CUDA_SUCCESS){
+			fprintf(stderr,"Error freeing result array %d (%d)\n",t->devno,cerr);
+		}
+		if((cerr = cuCtxPopCurrent(&t->ctx)) != CUDA_SUCCESS){
+			fprintf(stderr,"Error popping context %d (%d)\n",t->devno,cerr);
+		}
+		if((cerr = cuCtxDestroy(t->ctx)) != CUDA_SUCCESS){
+			fprintf(stderr,"Error freeing context %d (%d)\n",t->devno,cerr);
+		}
 		free(t);
 	}
 }
