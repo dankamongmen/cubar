@@ -82,6 +82,34 @@ cudash_quit(const char *c,const char *cmdline){
 }
 
 static int
+cuda_cardinfo(int dev){
+	struct cudaDeviceProp dprop;
+	int attr,cerr;
+	CUdevice c;
+
+	if((cerr = cuDeviceGet(&c,dev)) != CUDA_SUCCESS){
+		fprintf(stderr," Couldn't associative with device %d (%d)\n",dev,cerr);
+		return -1;
+	}
+	if((cerr = cudaGetDeviceProperties(&dprop,dev)) != CUDA_SUCCESS){
+		fprintf(stderr," Couldn't get properties for dev %d (%d)\n",dev,cerr);
+		return cerr;
+	}
+	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_WARP_SIZE,c);
+	if(cerr != CUDA_SUCCESS || attr <= 0 || printf("Warp size:\t %d\n",attr) < 0){
+		return cerr;
+	}
+	if(printf("Compute mode:\t %s\n",
+		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "Exclusive" :
+		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "Prohibited" :
+		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "Shared"
+		: "Unknown") < 0){
+		return -1;
+	}
+	return 0;
+}
+
+static int
 list_cards(void){
 	cudadev *c;
 
@@ -91,6 +119,9 @@ list_cards(void){
 			return -1;
 		}
 		if(kernel_cardinfo(c->devno)){
+			return -1;
+		}
+		if(cuda_cardinfo(c->devno)){
 			return -1;
 		}
 		if(printf("\n") < 0){
