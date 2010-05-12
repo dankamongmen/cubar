@@ -16,6 +16,7 @@ int getzul(const char *,unsigned long *);
 uintmax_t cuda_alloc_max(FILE *,CUdeviceptr *,unsigned);
 uintmax_t cuda_hostalloc_max(FILE *,void **,unsigned,unsigned);
 
+int kernel_version(void);
 int kernel_registry(void);
 int kernel_version_str(void);
 int kernel_cardinfo(unsigned);

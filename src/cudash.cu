@@ -1000,6 +1000,15 @@ cudash_registry(const char *c,const char *cmdline){
 }
 
 static int
+cudash_driver(const char *c,const char *cmdline){
+	ENFORCE_ARGEND(c,cmdline);
+	if(kernel_version()){
+		return -1;
+	}
+	return 0;
+}
+
+static int
 cudash_pokectx(const char *c,const char *cmdline){
 	unsigned long long devno,value,off;
 	cudadev *cd;
@@ -1073,6 +1082,7 @@ static const struct {
 	{ "clocks",	cudash_clocks,	"spin for a specified number of device clocks",	},
 	{ "ctxdump",	cudash_ctxdump,	"serialize CUcontext objects",	},
 	{ "device",	cudash_device,	"change the current device",	},
+	{ "driver",	cudash_driver,	"driver version info",},
 	{ "exec",	cudash_exec,	"fork, and exec a binary",	},
 	{ "exit",	cudash_quit,	"exit the CUDA shell",	},
 	{ "fork",	cudash_fork,	"fork a child cudash",	},

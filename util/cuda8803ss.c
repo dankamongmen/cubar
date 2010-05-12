@@ -179,6 +179,10 @@ int kernel_registry(void){
 	return dumpprocfile(PROC_REGISTRY);
 }
 
+int kernel_version(void){
+	return dumpprocfile(PROC_VERFILE);
+}
+
 int kernel_version_str(void){
 #define VERFILEMAX ((size_t)1024)
 #define NVRMTAG "NVRM version: "
