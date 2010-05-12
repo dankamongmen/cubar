@@ -162,6 +162,7 @@ dumpprocfile(const char *fn){
 	return 0;
 }
 
+// FIXME this ought also duplicate nvidia-smi -q behavior: temp, pciid, ECC, etc
 int kernel_cardinfo(unsigned idx){
 	char fn[NAME_MAX];
 	int r;
