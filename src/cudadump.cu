@@ -268,7 +268,7 @@ int main(int argc,char **argv){
 			return EXIT_FAILURE;
 		}
 		if(state != CU_COMPUTEMODE_DEFAULT){
-			printf("  Skipping device (put it in shared mode).\n",z);
+			printf("  Skipping device %d (put it in shared mode).\n",z);
 			continue;
 		}
 		if(cudaMalloc(&resarr,sizeof(hostresarr)) || cudaMemset(resarr,0,sizeof(hostresarr))){
