@@ -31,10 +31,6 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem,int *state){
 		fprintf(stderr," Couldn't get device properties (%d)\n",cerr);
 		return cerr;
 	}
-	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_WARP_SIZE,c);
-	if(cerr != CUDA_SUCCESS || attr <= 0){
-		return cerr;
-	}
 	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT,c);
 	if(cerr != CUDA_SUCCESS || attr <= 0){
 		return cerr;
