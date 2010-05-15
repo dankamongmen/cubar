@@ -25,18 +25,18 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem,int *state){
 	*state = 0;
 	if((cerr = cuDeviceGet(&c,dev)) != CUDA_SUCCESS){
 		fprintf(stderr," Couldn't associative with device (%d)\n",cerr);
-		return cerr;
+		return -1;
 	}
 	if((cerr = cudaGetDeviceProperties(&dprop,dev)) != CUDA_SUCCESS){
 		fprintf(stderr," Couldn't get device properties (%d)\n",cerr);
-		return cerr;
+		return -1;
 	}
 	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT,c);
 	if(cerr != CUDA_SUCCESS || attr <= 0){
-		return cerr;
+		return -1;
 	}
 	if((cerr = cuDeviceComputeCapability(&major,&minor,c)) != CUDA_SUCCESS){
-		return cerr;
+		return -1;
 	}
 	if((str = malloc(CUDASTRLEN)) == NULL){
 		return -1;
