@@ -1345,7 +1345,7 @@ make_devices(int count){
 	return 0;
 }
 
-int main(void){
+int main(int argc,char **argv){
 	const char *prompt = "cudash> ";
 	char *rln = NULL;
 	int count;
@@ -1358,28 +1358,33 @@ int main(void){
 	}
 	curdev = devices;
 
-	// Set up GNU readline history.
-	using_history();
-	if(read_history(HISTORY_FILE)){
-		// FIXME no history file for you! oh well
-	}
-	while( (rln = readline(prompt)) ){
-		// An empty string ought neither be saved to history nor run.
-		if(strcmp("",rln)){
-			if(add_to_history(rln)){
-				fprintf(stderr,"Error adding input to history. Exiting.\n");
-				free(rln);
-				break;
-			}
-			if(run_command(rln)){
-				free(rln);
-				break;
-			}
+	if(argc > 1){
+		// FIXME generate string from all of argv
+		run_command(argv[1]); // FIXME get result and return it?
+	}else{
+		// Set up GNU readline history.
+		using_history();
+		if(read_history(HISTORY_FILE)){
+			// FIXME no history file for you! oh well
 		}
-		free(rln);
-	}
-	if(write_history(HISTORY_FILE)){
-		fprintf(stderr,"Warning: couldn't write history file at %s\n",HISTORY_FILE);
+		while( (rln = readline(prompt)) ){
+			// An empty string ought neither be saved to history nor run.
+			if(strcmp("",rln)){
+				if(add_to_history(rln)){
+					fprintf(stderr,"Error adding input to history. Exiting.\n");
+					free(rln);
+					break;
+				}
+				if(run_command(rln)){
+					free(rln);
+					break;
+				}
+			}
+			free(rln);
+		}
+		if(write_history(HISTORY_FILE)){
+			fprintf(stderr,"Warning: couldn't write history file at %s\n",HISTORY_FILE);
+		}
 	}
 	free_devices(devices);
 	free_maps(maps);
