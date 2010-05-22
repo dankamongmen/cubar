@@ -30,8 +30,8 @@ CUDARTLIB:=$(CUDART)/lib64
 NVCC?=$(CUDADIR)/bin/nvcc
 GPUARCH?=compute_10
 GPUCODE?=sm_12,sm_10
-CFLAGS:=-O2 -Wall -W -Werror -march=native -mtune=native
-NCFLAGS:=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
+CFLAGS+=-O2 -Wall -W -Werror -march=native -mtune=native
+NCFLAGS+=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
 NCFLAGS+=-arch $(GPUARCH) -code $(GPUCODE) --compiler-bindir=/usr/bin/gcc-4.3 --ptxas-options=-v
 LFLAGS:=-lcuda
 NLFLAGS:=$(LFLAGS) --linker-options -R$(CUDARTLIB)
