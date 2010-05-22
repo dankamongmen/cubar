@@ -22,12 +22,12 @@ BIN:=$(addprefix out/,$(basename $(notdir $(CSRC) $(CUDASRC))))
 PTX:=$(addsuffix .ptx,$(addprefix out/,$(basename $(notdir $(CUDASRC)))))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
-CUDA?=/usr/
-CUDAINC?=$(CUDA)/include/cuda
+CUDADIR?=/usr/
+CUDAINC?=$(CUDADIR)/include/cuda
 CUDART?=$(HOME)/local/cuda/
 CUDARTLIB:=$(CUDART)/lib64
 
-NVCC?=$(CUDA)/bin/nvcc
+NVCC?=$(CUDADIR)/bin/nvcc
 GPUARCH?=compute_10
 GPUCODE?=sm_12,sm_10
 CFLAGS:=-O2 -Wall -W -Werror -march=native -mtune=native
