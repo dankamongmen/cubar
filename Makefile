@@ -23,7 +23,7 @@ PTX:=$(addsuffix .ptx,$(addprefix out/,$(basename $(notdir $(CUDASRC)))))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
 CUDADIR?=/usr/
-CUDAINC?=$(CUDADIR)/include/cuda
+CUDAINC?=$(CUDADIR)/include/
 CUDART?=$(HOME)/local/cuda/
 CUDARTLIB:=$(CUDART)/lib64
 
