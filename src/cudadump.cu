@@ -10,7 +10,7 @@
 #include <sys/mman.h>
 #include <driver_types.h>
 #include <cuda_runtime_api.h>
-#include "cuda8803ss.h"
+#include "cubar.h"
 
 // CUDA must already have been initialized before calling cudaid().
 #define CUDASTRLEN 80

@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <sys/types.h>
-#include "cuda8803ss.h"
+#include "cubar.h"
 
 static unsigned thrdone,threadsmaintain = 1;
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;

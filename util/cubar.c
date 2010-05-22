@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <limits.h>
 #include <sys/stat.h>
-#include "cuda8803ss.h"
+#include "cubar.h"
 
 #define NVPROCDIR "/proc/driver/nvidia"
 #define PROC_VERFILE "/proc/driver/nvidia/version"

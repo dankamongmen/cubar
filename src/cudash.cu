@@ -7,7 +7,7 @@
 #include <sys/mman.h>
 #include <readline/history.h>
 #include <readline/readline.h>
-#include "cuda8803ss.h"
+#include "cubar.h"
 
 #define HISTORY_FILE ".cudahistory" // FIXME use homedir
 // Single bytes allocated using cuMemAlloc() have a periodicity of 0x100, but

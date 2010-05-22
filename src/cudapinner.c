@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/mman.h>
-#include "cuda8803ss.h"
+#include "cubar.h"
 
 // FIXME: we really ought take a bus specification rather than a device number,
 // since the latter are unsafe across hardware removal/additions.

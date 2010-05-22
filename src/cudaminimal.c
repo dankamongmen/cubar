@@ -4,7 +4,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include "cuda8803ss.h"
+#include "cubar.h"
 
 static void
 usage(const char *argv){

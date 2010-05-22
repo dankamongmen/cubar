@@ -8,7 +8,7 @@
 #include <sys/mman.h>
 #include <driver_types.h>
 #include <cuda_runtime_api.h>
-#include "cuda8803ss.h"
+#include "cubar.h"
 
 static int
 dumpresults(const uint32_t *res,unsigned count){

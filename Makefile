@@ -43,43 +43,43 @@ bin: $(TAGS) $(BIN)
 	
 ptx: $(PTX)
 
-$(TAGS): $(CSRC) $(CUDASRC) util/cuda8803ss.c $(SRC)/cuda8803ss.h
+$(TAGS): $(CSRC) $(CUDASRC) util/cubar.c $(SRC)/cubar.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 
-$(OUT)/cudabounder: $(OUT)/cudabounder.o $(OUT)/cuda8803ss.o
+$(OUT)/cudabounder: $(OUT)/cudabounder.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
-$(OUT)/cudadump: $(OUT)/cudadump.o $(OUT)/cuda8803ss.o
+$(OUT)/cudadump: $(OUT)/cudadump.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
-$(OUT)/cudaminimal: $(OUT)/cudaminimal.o $(OUT)/cuda8803ss.o
+$(OUT)/cudaminimal: $(OUT)/cudaminimal.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
-$(OUT)/cudapinner: $(OUT)/cudapinner.o $(OUT)/cuda8803ss.o
+$(OUT)/cudapinner: $(OUT)/cudapinner.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
-$(OUT)/cudaquirky: $(OUT)/cudaquirky.o $(OUT)/cuda8803ss.o
+$(OUT)/cudaquirky: $(OUT)/cudaquirky.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
-$(OUT)/cudaranger: $(OUT)/cudaranger.o $(OUT)/cuda8803ss.o
+$(OUT)/cudaranger: $(OUT)/cudaranger.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
-$(OUT)/cudash: $(OUT)/cudash.o $(OUT)/cuda8803ss.o
+$(OUT)/cudash: $(OUT)/cudash.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS) -lreadline
 
-$(OUT)/cudaspawner: $(OUT)/cudaspawner.o $(OUT)/cuda8803ss.o
+$(OUT)/cudaspawner: $(OUT)/cudaspawner.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
-$(OUT)/cudastuffer: $(OUT)/cudastuffer.o $(OUT)/cuda8803ss.o
+$(OUT)/cudastuffer: $(OUT)/cudastuffer.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
@@ -87,15 +87,15 @@ $(OUT)/%.ptx: $(SRC)/%.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(PTXFLAGS) $(NCFLAGS) -o $@ $< $(LFLAGS)
 
-$(OUT)/%.o: $(SRC)/%.cu $(SRC)/cuda8803ss.h
+$(OUT)/%.o: $(SRC)/%.cu $(SRC)/cubar.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -c -o $@ $< $(LFLAGS)
 
-$(OUT)/%.o: $(SRC)/%.c $(SRC)/cuda8803ss.h
+$(OUT)/%.o: $(SRC)/%.c $(SRC)/cubar.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) -I$(SRC) -I$(CUDAINC) $(CFLAGS) -c -o $@ $< $(LFLAGS)
 
-$(OUT)/%.o: util/%.c $(SRC)/cuda8803ss.h
+$(OUT)/%.o: util/%.c $(SRC)/cubar.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) -I$(SRC) -I$(CUDAINC) $(CFLAGS) -c -o $@ $< $(LFLAGS)
 

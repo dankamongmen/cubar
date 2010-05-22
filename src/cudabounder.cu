@@ -1,7 +1,7 @@
 #include <cuda.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "cuda8803ss.h"
+#include "cubar.h"
 
 static void
 usage(const char *a0){

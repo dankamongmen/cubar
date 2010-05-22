@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "cuda8803ss.h"
+#include "cubar.h"
 
 __global__ void quirkykernel(void){
 	int __shared__ sharedvar;
