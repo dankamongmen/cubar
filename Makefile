@@ -2,7 +2,8 @@
 .PHONY: all bin ptx profile test fulltest clean
 .DEFAULT_GOAL:=test
 
-include Makefile.local
+LOCALMAKE:=Makefile.local
+include $(LOCALMAKE)
 
 SRC:=src
 OUT:=out
@@ -122,3 +123,7 @@ fulltest: test
 
 clean:
 	rm -rf out $(TAGS) $(wildcard *.dump)
+
+$(LOCALMAKE):
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	touch $@
