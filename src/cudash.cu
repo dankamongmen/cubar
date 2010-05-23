@@ -104,6 +104,14 @@ cuda_cardinfo(int dev){
 				attr ? "Yes" : "No") < 0){
 		return cerr;
 	}
+	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_ECC_ENABLED,c);
+	if(cerr != CUDA_SUCCESS || (!!attr != attr) || printf("ECC enabled:\t %s\n",
+				attr ? "Yes" : "No") < 0){
+		return cerr;
+	}
+	if(printf("Timelimits:\t %s\n",dprop.kernelExecTimeoutEnabled ? "Yes" : "No") < 0){
+		return -1;
+	}
 	if(printf("Compute mode:\t %s\n",
 		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "Exclusive" :
 		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "Prohibited" :
