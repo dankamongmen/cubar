@@ -27,7 +27,7 @@ typedef struct cudadev {
 	char *devname;
 	unsigned devno;
 	struct cudadev *next;
-	int major,minor,warpsz,mpcount;
+	int major,minor,warpsz,mpcount,conkernels;
 	CUcontext ctx;
 	cudamap *map;
 	unsigned addrbits;
@@ -97,6 +97,11 @@ cuda_cardinfo(int dev){
 	}
 	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_WARP_SIZE,c);
 	if(cerr != CUDA_SUCCESS || attr <= 0 || printf("Warp size:\t %d\n",attr) < 0){
+		return cerr;
+	}
+	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS,c);
+	if(cerr != CUDA_SUCCESS || (!!attr != attr) || printf("Multikernel:\t %s\n",
+				attr ? "Yes" : "No") < 0){
 		return cerr;
 	}
 	if(printf("Compute mode:\t %s\n",
