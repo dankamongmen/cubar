@@ -82,8 +82,7 @@ int main(int argc,char **argv){
 		return CUDARANGER_EXIT_ERROR;
 	}
 	if((cerr = init_cuda_ctx(zul,&ctx)) != CUDA_SUCCESS){
-		fprintf(stderr,"Error initializing CUDA device %lu (%d, %s?)\n",
-				zul,cerr,cudaGetErrorString(cudaGetLastError()));
+		fprintf(stderr,"Error initializing CUDA device %lu (%d)\n",zul,cerr);
 		return CUDARANGER_EXIT_ERROR;
 	}
 	if(cudaMalloc(&resarr,sizeof(hostres)) || cudaMemset(resarr,0x00,sizeof(hostres))){
