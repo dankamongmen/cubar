@@ -101,12 +101,17 @@ uintmax_t cuda_alloc_max(FILE *o,CUdeviceptr *ptr,unsigned unit){
 			int cerr;
 
 			if(o){ fprintf(o,"%jub @ 0x%x...",s,*ptr); }
+			printf("min/max: %ju %ju\n",min,tmax);
 			if((cerr = cuMemFree(*ptr)) ){
 				fprintf(stderr,"  Couldn't free %jub at 0x%x (%d?)\n",
 					s,*ptr,cerr);
 				return 0;
 			}
-			min = s;
+			if(min < s){
+				min = s;
+			}else{
+				min += unit;
+			}
 		}else{
 			if(o) { fprintf(o,"%jub!\n",s); }
 			return s;
