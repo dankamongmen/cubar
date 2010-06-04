@@ -84,6 +84,7 @@ cudash_quit(const char *c,const char *cmdline){
 static int
 cuda_cardinfo(int dev){
 	struct cudaDeviceProp dprop;
+	unsigned mem,tmem;
 	int attr,cerr;
 	CUdevice c;
 
@@ -117,6 +118,12 @@ cuda_cardinfo(int dev){
 		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "Prohibited" :
 		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "Shared"
 		: "Unknown") < 0){
+		return -1;
+	}
+	if(cuMemGetInfo(&mem,&tmem)){
+		return -1;
+	}
+	if(printf("Memory free:\t %u/%u\n",mem,tmem) < 0){
 		return -1;
 	}
 	return 0;
