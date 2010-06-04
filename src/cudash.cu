@@ -83,7 +83,6 @@ cudash_quit(const char *c,const char *cmdline){
 
 static int
 cuda_cardinfo(int dev){
-	struct cudaDeviceProp dprop;
 	unsigned mem,tmem;
 	int attr,cerr;
 	CUdevice c;
@@ -92,12 +91,26 @@ cuda_cardinfo(int dev){
 		fprintf(stderr," Couldn't associative with device %d (%d)\n",dev,cerr);
 		return -1;
 	}
-	if((cerr = cudaGetDeviceProperties(&dprop,dev)) != CUDA_SUCCESS){
-		fprintf(stderr," Couldn't get properties for dev %d (%d)\n",dev,cerr);
+	if(cuMemGetInfo(&mem,&tmem)){
+		return -1;
+	}
+	if(printf("Memory free:\t %u/%u (%2.2f%%)\n",mem,tmem,
+				(float)mem * 100 / tmem) < 0){
+		return -1;
+	}
+	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_INTEGRATED,c);
+	if(cerr != CUDA_SUCCESS || (!!attr != attr) || printf("Integrated:\t %s\n",
+				attr ? "Yes" : "No") < 0){
 		return cerr;
 	}
-	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_WARP_SIZE,c);
-	if(cerr != CUDA_SUCCESS || attr <= 0 || printf("Warp size:\t %d\n",attr) < 0){
+	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_CAN_MAP_HOST_MEMORY,c);
+	if(cerr != CUDA_SUCCESS || (!!attr != attr) || printf("Shared maps:\t %s\n",
+				attr ? "Yes" : "No") < 0){
+		return cerr;
+	}
+	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_GPU_OVERLAP,c);
+	if(cerr != CUDA_SUCCESS || (!!attr != attr) || printf("Copy+compute:\t %s\n",
+				attr ? "Yes" : "No") < 0){
 		return cerr;
 	}
 	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS,c);
@@ -110,22 +123,21 @@ cuda_cardinfo(int dev){
 				attr ? "Yes" : "No") < 0){
 		return cerr;
 	}
-	if(printf("Timelimits:\t %s\n",dprop.kernelExecTimeoutEnabled ? "Yes" : "No") < 0){
-		return -1;
+	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_KERNEL_EXEC_TIMEOUT,c);
+	if(cerr != CUDA_SUCCESS || (!!attr != attr) || printf("Timelimits:\t %s\n",
+				attr ? "Yes" : "No") < 0){
+		return cerr;
 	}
-	if(printf("Compute mode:\t %s\n",
-		dprop.computeMode == CU_COMPUTEMODE_EXCLUSIVE ? "Exclusive" :
-		dprop.computeMode == CU_COMPUTEMODE_PROHIBITED ? "Prohibited" :
-		dprop.computeMode == CU_COMPUTEMODE_DEFAULT ? "Shared"
-		: "Unknown") < 0){
-		return -1;
+	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_COMPUTE_MODE,c);
+	if(cerr != CUDA_SUCCESS || printf("Compute mode:\t %s\n",
+			attr == CU_COMPUTEMODE_EXCLUSIVE ? "Exclusive" :
+			attr == CU_COMPUTEMODE_PROHIBITED ? "Prohibited" :
+			attr == CU_COMPUTEMODE_DEFAULT ? "Shared" : "Unknown") < 0){;
+		return cerr;
 	}
-	if(cuMemGetInfo(&mem,&tmem)){
-		return -1;
-	}
-	if(printf("Memory free:\t %u/%u (%2.2f%%)\n",mem,tmem,
-				(float)mem * 100 / tmem) < 0){
-		return -1;
+	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_WARP_SIZE,c);
+	if(cerr != CUDA_SUCCESS || attr <= 0 || printf("Warp size:\t %d\n",attr) < 0){
+		return cerr;
 	}
 	return 0;
 }
@@ -135,8 +147,9 @@ list_cards(void){
 	cudadev *c;
 
 	for(c = devices ; c ; c = c->next){
-		if(printf("Card %d: %s, capability %d.%d, %d MPs\n",
-			c->devno,c->devname,c->major,c->minor,c->mpcount) < 0){
+		if(printf("Card %d:\t\t %s, capability %d.%d, %d MP%s\n",
+			c->devno,c->devname,c->major,c->minor,
+			c->mpcount,c->mpcount == 1 ? "" : "s") < 0){
 			return -1;
 		}
 		if(kernel_cardinfo(c->devno)){
@@ -970,7 +983,7 @@ list_contexts(void){
 		CUcontext ctx = c->ctx;
 		unsigned z;
 
-		if(printf("Card %d: %s, capability %d.%d, %d MP%s\n",
+		if(printf("Card %d:\t\t %s, capability %d.%d, %d MP%s\n",
 			c->devno,c->devname,c->major,c->minor,c->mpcount,
 			c->mpcount == 1 ? "" : "s") < 0){
 			return -1;
