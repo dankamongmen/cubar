@@ -123,7 +123,8 @@ cuda_cardinfo(int dev){
 	if(cuMemGetInfo(&mem,&tmem)){
 		return -1;
 	}
-	if(printf("Memory free:\t %u/%u\n",mem,tmem) < 0){
+	if(printf("Memory free:\t %u/%u (%2.2f%%)\n",mem,tmem,
+				(float)mem * 100 / tmem) < 0){
 		return -1;
 	}
 	return 0;
