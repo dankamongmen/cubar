@@ -32,12 +32,12 @@ typedef struct cudadev {
 	cudamap *map;
 	unsigned addrbits;
 	CUdeviceptr resarray;
+	unsigned alloccount;
 } cudadev;
 
 static cudamap *maps;
-static unsigned alloccount;
 static unsigned cudash_child;
-static cudadev *devices,*curdev;
+static cudadev *devices,*curdev,systemdev;
 
 static int
 add_to_history(const char *rl){
@@ -49,7 +49,7 @@ add_to_history(const char *rl){
 }
 
 static cudamap *
-create_cuda_map(uintptr_t p,size_t s,void *targ){
+create_cuda_map(cudadev *dev,uintptr_t p,size_t s,void *targ){
 	cudamap *r;
 
 	if(s == 0){
@@ -63,7 +63,7 @@ create_cuda_map(uintptr_t p,size_t s,void *targ){
 	r->s = s;
 	r->maps = targ;
 	// allocno of 0 is internal; we ought only need one internal alloc.
-	r->allocno = alloccount++;
+	r->allocno = dev->alloccount++;
 	return r;
 }
 
@@ -175,12 +175,13 @@ cudash_cards(const char *c,const char *cmdline){
 }
 
 static int
-create_ctx_mapofmap(cudamap **m,uintptr_t p,size_t size,void *targ){
-	cudamap *cm;
+create_ctx_mapofmap(cudadev *dev,uintptr_t p,size_t size,void *targ){
+	cudamap *cm,**m;
 
-	if((cm = create_cuda_map(p,size,targ)) == NULL){
+	if((cm = create_cuda_map(dev,p,size,targ)) == NULL){
 		return 0;
 	}
+	m = &dev->map;
 	while(*m){
 		if(cm->base <= (*m)->base){
 			break;
@@ -193,8 +194,8 @@ create_ctx_mapofmap(cudamap **m,uintptr_t p,size_t size,void *targ){
 }
 
 static inline int
-create_ctx_map(cudamap **m,uintptr_t p,size_t size){
-	return create_ctx_mapofmap(m,p,size,MAP_FAILED);
+create_ctx_map(cudadev *dev,uintptr_t p,size_t size){
+	return create_ctx_mapofmap(dev,p,size,MAP_FAILED);
 }
 
 __global__ void
@@ -462,7 +463,7 @@ cudash_alloc(const char *c,const char *cmdline){
 		fprintf(stderr,"Couldn't allocate %llub (%d)\n",size,cerr);
 		return 0;
 	}
-	if(create_ctx_map(&curdev->map,p,size)){
+	if(create_ctx_map(curdev,p,size)){
 		cuMemFree(p);
 		return 0;
 	}
@@ -561,7 +562,7 @@ cudash_allocat(const char *c,const char *cmdline){
 		chain = &t->next;
 	}
 	free_cudaflist(head);
-	if(create_ctx_map(&curdev->map,p,size)){
+	if(create_ctx_map(curdev,p,size)){
 		cuMemFree(p);
 		return 0;
 	}
@@ -581,7 +582,7 @@ cudash_allocmax(const char *c,const char *cmdline){
 	if((size = cuda_alloc_max(stdout,&p,1)) == 0){
 		return 0;
 	}
-	if(create_ctx_map(&curdev->map,p,size)){
+	if(create_ctx_map(curdev,p,size)){
 		cuMemFree(p);
 		return 0;
 	}
@@ -613,11 +614,11 @@ cudash_pinmax(const char *c,const char *cmdline){
 		return 0;
 	}
 	printf("Mapped %llub into card %d @ %p\n",size,0,cd);
-	if(create_ctx_map(&maps,(uintptr_t)p,size)){
+	if(create_ctx_map(&systemdev,(uintptr_t)p,size)){
 		cuMemFreeHost(p);
 		return 0;
 	}
-	if(create_ctx_mapofmap(&curdev->map,cd,size,p)){
+	if(create_ctx_mapofmap(curdev,cd,size,p)){
 		cuMemFreeHost(p);
 		// FIXME need to extract from host map list
 		return 0;
@@ -651,11 +652,11 @@ cudash_pin(const char *c,const char *cmdline){
 		return 0;
 	}
 	printf("Mapped %llub into card %d @ %p\n",size,0,cd);
-	if(create_ctx_map(&maps,(uintptr_t)p,size)){
+	if(create_ctx_map(&systemdev,(uintptr_t)p,size)){
 		cuMemFreeHost(p);
 		return 0;
 	}
-	if(create_ctx_mapofmap(&curdev->map,cd,size,p)){
+	if(create_ctx_mapofmap(curdev,cd,size,p)){
 		cuMemFreeHost(p);
 		// FIXME need to extract from host map list
 		return 0;
@@ -1346,7 +1347,7 @@ id_cudadev(cudadev *c){
 		free(c->devname);
 		return -1;
 	}
-	if(create_ctx_map(&c->map,c->resarray,rsize)){
+	if(create_ctx_map(c,c->resarray,rsize)){
 		cuCtxDestroy(c->ctx);
 		free(c->devname);
 		return -1;
@@ -1365,6 +1366,7 @@ make_devices(int count){
 			free_devices(chain);
 			return -1;
 		}
+		c->alloccount = 0;
 		c->devno = count;
 		c->map = NULL;
 		if(id_cudadev(c)){
