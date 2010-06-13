@@ -95,10 +95,12 @@ cuda_cardinfo(int dev){
 	if(cuMemGetInfo(&mem,&tmem)){
 		return -1;
 	}
-	if(printf("Memory free:\t %u/%u (%2.2f%%)\n",mem,tmem,
-				(float)mem * 100 / tmem) < 0){
+#define MB(x) (((x) >> 20u) + !!(x % (1024 * 1024)))
+	if(printf("Memory free:\t %u/%u (%u/%u MB, %2.2f%%)\n",mem,tmem,
+			MB(mem),MB(tmem),(float)mem * 100 / tmem) < 0){
 		return -1;
 	}
+#undef MB
 	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_INTEGRATED,c);
 	if(cerr != CUDA_SUCCESS || (!!attr != attr) || printf("Integrated:\t %s\n",
 				attr ? "Yes" : "No") < 0){
