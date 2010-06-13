@@ -1,0 +1,9 @@
+Q: I get weird compiler errors (exec failure for cc1plus, etc)!
+Q: I get weird compiler errors (functions declared 'static' but never defined)
+Q: I get weird compiler errors (inline functions declared 'weak')
+A: Do you have multiple gcc/g++/libstdc++ versions installed? nvcc doesn't at
+    this time like gcc's newer than 4.3. I work around this via:
+
+	export COMPILER_PATH:=/usr/lib/gcc/x86_64-linux-gnu/4.3
+
+    in my Makefile.local.
