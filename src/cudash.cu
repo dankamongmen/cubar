@@ -40,6 +40,14 @@ static cudamap *maps;
 static unsigned cudash_child;
 static cudadev *devices,*curdev,systemdev;
 
+static unsigned
+max_fp_precision(const cudadev *c){
+	if(c->major >= 2 || c->minor >= 3){
+		return 64;
+	}
+	return 32;
+}
+
 static int
 add_to_history(const char *rl){
 	if(strcmp(rl,"") == 0){
@@ -83,13 +91,13 @@ cudash_quit(const char *c,const char *cmdline){
 }
 
 static int
-cuda_cardinfo(int dev){
+cuda_cardinfo(const cudadev *cd){
 	unsigned mem,tmem;
 	int attr,cerr;
 	CUdevice c;
 
-	if((cerr = cuDeviceGet(&c,dev)) != CUDA_SUCCESS){
-		fprintf(stderr," Couldn't associative with device %d (%d)\n",dev,cerr);
+	if((cerr = cuDeviceGet(&c,cd->devno)) != CUDA_SUCCESS){
+		fprintf(stderr," Couldn't associative with device %d (%d)\n",cd->devno,cerr);
 		return -1;
 	}
 	if(cuMemGetInfo(&mem,&tmem)){
@@ -138,9 +146,11 @@ cuda_cardinfo(int dev){
 			attr == CU_COMPUTEMODE_DEFAULT ? "Shared" : "Unknown") < 0){;
 		return cerr;
 	}
-	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_WARP_SIZE,c);
-	if(cerr != CUDA_SUCCESS || attr <= 0 || printf("Warp size:\t %d\n",attr) < 0){
-		return cerr;
+	if(printf("Warp size:\t %d\n",cd->warpsz) < 0){
+		return -1;
+	}
+	if(printf("Max FP precis:\t %u bits\n",max_fp_precision(cd)) < 0){
+		return -1;
 	}
 	return 0;
 }
@@ -158,7 +168,7 @@ list_cards(void){
 		if(kernel_cardinfo(c->devno)){
 			return -1;
 		}
-		if(cuda_cardinfo(c->devno)){
+		if(cuda_cardinfo(c)){
 			return -1;
 		}
 		if(printf("\n") < 0){
