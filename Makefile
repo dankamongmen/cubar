@@ -1,5 +1,5 @@
 .DELETE_ON_ERROR:
-.PHONY: all bin ptx profile test fulltest clean
+.PHONY: all bin ptx profile test fulltest clean install uninstall
 .DEFAULT_GOAL:=test
 
 LOCALMAKE:=Makefile.local
@@ -26,6 +26,10 @@ CUDADIR?=/usr/
 CUDAINC?=$(CUDADIR)/include
 CUDARTLIB?=$(CUDADIR)/lib64
 
+TARGET?=/usr/local
+TARGBIN?=$(TARGET)/bin
+
+INSTALL?=install
 NVCC?=$(CUDADIR)/bin/nvcc
 GPUARCH?=compute_10
 GPUCODE?=sm_12,sm_10
@@ -94,6 +98,13 @@ fulltest: test
 
 clean:
 	rm -rf out $(TAGS) $(wildcard *.dump)
+
+install:
+	$(INSTALL) -d $(TARGBIN)
+	$(INSTALL) $(BIN) $(TARGBIN)
+
+uninstall:
+	rm -rf $(addprefix $(TARGBIN),$(BIN))
 
 $(LOCALMAKE):
 	@[ -d $(@D) ] || mkdir -p $(@D)
