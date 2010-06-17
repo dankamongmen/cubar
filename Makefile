@@ -23,15 +23,15 @@ PTX:=$(addsuffix .ptx,$(addprefix out/,$(basename $(notdir $(CUDASRC)))))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
 CUDADIR?=/usr/
-CUDAINC?=$(CUDADIR)/include/
+CUDAINC?=$(CUDADIR)/include
 CUDARTLIB?=$(CUDADIR)/lib64
 
 NVCC?=$(CUDADIR)/bin/nvcc
 GPUARCH?=compute_10
 GPUCODE?=sm_12,sm_10
-CFLAGS+=-O2 -Wall -W -Werror -march=native -mtune=native
-NCFLAGS+=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
-NCFLAGS+=-arch $(GPUARCH) -code $(GPUCODE) --ptxas-options=-v
+CFLAGS+=-O2 -Wall -W -Werror -march=native -mtune=native -I$(SRC) -I$(CUDAINC)
+NCFLAGS+=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native
+NCFLAGS+=-arch $(GPUARCH) -code $(GPUCODE) --ptxas-options=-v -I$(SRC) -I$(CUDAINC)
 LFLAGS:=-L$(CUDARTLIB) -lcuda
 NLFLAGS:=$(LFLAGS) --linker-options -R$(CUDARTLIB)
 PTXFLAGS:=--ptx
@@ -65,11 +65,11 @@ $(OUT)/%.o: $(SRC)/%.cu $(SRC)/cubar.h
 
 $(OUT)/%.o: $(SRC)/%.c $(SRC)/cubar.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) -I$(SRC) -I$(CUDAINC) $(CFLAGS) -c -o $@ $< $(LFLAGS)
+	$(CC) $(CFLAGS) -c -o $@ $< $(LFLAGS)
 
 $(OUT)/%.o: util/%.c $(SRC)/cubar.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) -I$(SRC) -I$(CUDAINC) $(CFLAGS) -c -o $@ $< $(LFLAGS)
+	$(CC) $(CFLAGS) -c -o $@ $< $(LFLAGS)
 
 profile: $(PROFDATA)
 
