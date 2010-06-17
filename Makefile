@@ -32,7 +32,7 @@ GPUCODE?=sm_12,sm_10
 CFLAGS+=-O2 -Wall -W -Werror -march=native -mtune=native
 NCFLAGS+=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native -I$(SRC) -I$(CUDAINC)
 NCFLAGS+=-arch $(GPUARCH) -code $(GPUCODE) --ptxas-options=-v
-LFLAGS:=-lcuda
+LFLAGS:=-L$(CUDARTLIB) -lcuda
 NLFLAGS:=$(LFLAGS) --linker-options -R$(CUDARTLIB)
 PTXFLAGS:=--ptx
 TAGS:=.tags
@@ -47,41 +47,13 @@ $(TAGS): $(CSRC) $(CUDASRC) util/cubar.c $(SRC)/cubar.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 
-$(OUT)/cudabounder: $(OUT)/cudabounder.o $(OUT)/cubar.o
-	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
-
-$(OUT)/cudadump: $(OUT)/cudadump.o $(OUT)/cubar.o
-	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
-
-$(OUT)/cudaminimal: $(OUT)/cudaminimal.o $(OUT)/cubar.o
-	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
-
-$(OUT)/cudapinner: $(OUT)/cudapinner.o $(OUT)/cubar.o
-	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
-
-$(OUT)/cudaquirky: $(OUT)/cudaquirky.o $(OUT)/cubar.o
-	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
-
-$(OUT)/cudaranger: $(OUT)/cudaranger.o $(OUT)/cubar.o
+$(OUT)/%: $(OUT)/%.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS)
 
 $(OUT)/cudash: $(OUT)/cudash.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS) -lreadline
-
-$(OUT)/cudaspawner: $(OUT)/cudaspawner.o $(OUT)/cubar.o
-	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
-
-$(OUT)/cudastuffer: $(OUT)/cudastuffer.o $(OUT)/cubar.o
-	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(OUT)/%.ptx: $(SRC)/%.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
