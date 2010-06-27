@@ -1087,9 +1087,35 @@ cudash_registry(const char *c,const char *cmdline){
 }
 
 static int
+library_versions(void){
+	int attr,cerr,r = 0,rr;
+
+	if((rr = printf("libpci compile version: %s\n",PCILIB_VERSION)) < 0){
+		return -1;
+	}
+	r += rr;
+	if((rr = printf("CUDA compile version: %d.%d\n",CUDAMAJMIN(CUDA_VERSION))) < 0){
+		return -1;
+	}
+	r += rr;
+	if((cerr = cuDriverGetVersion(&attr)) != CUDA_SUCCESS){
+		fprintf(stderr,"Couldn't get CUDA driver version (%d)\n",cerr);
+		return -1;
+	}
+	if((rr = printf("CUDA link version: %d.%d\n",CUDAMAJMIN(attr))) < 0){
+		return -1;
+	}
+	r += rr;
+	return r;
+}
+
+static int
 cudash_driver(const char *c,const char *cmdline){
 	ENFORCE_ARGEND(c,cmdline);
 	if(kernel_version()){
+		return -1;
+	}
+	if(library_versions() < 0){
 		return -1;
 	}
 	return 0;

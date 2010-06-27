@@ -232,8 +232,6 @@ int kernel_version_str(void){
 #undef VERFILEMAX
 }
 
-#define CUDAMAJMIN(v) v / 1000, v % 1000
-
 int init_cuda_alldevs(int *count){
 	int attr,cerr;
 
