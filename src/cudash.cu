@@ -1439,6 +1439,7 @@ int main(int argc,char **argv){
 		exit(EXIT_FAILURE);
 	}
 	pci_init(pci);
+	pci_scan_bus(pci);
 	fprintf(stderr,"The CUDA shell (C) Nick Black 2010. Compiled against libpci version %s.\n",PCILIB_VERSION);
 	if(init_cuda_alldevs(&count)){
 		goto err;
