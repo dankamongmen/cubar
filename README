@@ -1,8 +1,17 @@
+Requirements:
+
+ - GCC 4.2 or higher
+ - CUDA libraries and header files (from NVIDIA device driver)
+ - CUDA SDK libraries (from NVIDIA CUDA SDK)
+ - libpci libraries and header files
+
+I've tested using CUDA 2.3+, on device drivers 196.x.x+.
+
 Q: I get weird compiler errors (exec failure for cc1plus, etc)!
 Q: I get weird compiler errors (functions declared 'static' but never defined)
 Q: I get weird compiler errors (inline functions declared 'weak')
-A: Do you have multiple gcc/g++/libstdc++ versions installed? nvcc doesn't at
-    this time like gcc's newer than 4.3. I work around this via:
+A: Do you have multiple gcc/g++/libstdc++ versions installed? nvcc doesn't
+   (at this time) like gcc's newer than 4.3. I work around this via:
 
 	export COMPILER_PATH:=/usr/lib/gcc/x86_64-linux-gnu/4.3
 

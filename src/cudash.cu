@@ -4,10 +4,18 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+// As of 3.1.7, at least, libpci doesn't use C++ guards :/
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <pci/pci.h>		// libpci
+#ifdef __cplusplus
+}
+#endif
 #include <sys/wait.h>
 #include <sys/mman.h>
-#include <readline/history.h>
-#include <readline/readline.h>
+#include <readline/history.h>	// GNU readline
+#include <readline/readline.h>	// GNU readline
 #include "cubar.h"
 
 #define HISTORY_FILE ".cudahistory" // FIXME use homedir
@@ -1396,23 +1404,31 @@ make_devices(int count){
 
 int main(int argc,char **argv){
 	const char *prompt = "cudash> ";
+	struct pci_access *pci = NULL;
 	char *rln = NULL;
 	int count;
 
-	if(init_cuda_alldevs(&count)){
+	if((pci = pci_alloc()) == NULL){
+		fprintf(stderr,"Couldn't initialize libpci\n");
 		exit(EXIT_FAILURE);
 	}
+	pci_init(pci);
+	fprintf(stderr,"cudash copyright Nick Black 2010. Compiled against libpci version %s.\n",PCILIB_VERSION);
+	if(init_cuda_alldevs(&count)){
+		goto err;
+	}
 	if(make_devices(count)){
-		exit(EXIT_FAILURE);
+		goto err;
 	}
 	curdev = devices;
 
 	if(argc > 1){
 		// FIXME generate string from all of argv
-		run_command(argv[1]); // FIXME get result and return it?
+		if(run_command(argv[1])){ // FIXME ret exact result code
+			goto err;
+		}
 	}else{
-		// Set up GNU readline history.
-		using_history();
+		using_history(); // Set up GNU readline history.
 		if(read_history(HISTORY_FILE)){
 			// FIXME no history file for you! oh well
 		}
@@ -1422,11 +1438,11 @@ int main(int argc,char **argv){
 				if(add_to_history(rln)){
 					fprintf(stderr,"Error adding input to history. Exiting.\n");
 					free(rln);
-					break;
+					goto err;
 				}
 				if(run_command(rln)){
 					free(rln);
-					break;
+					goto err;
 				}
 			}
 			free(rln);
@@ -1437,5 +1453,12 @@ int main(int argc,char **argv){
 	}
 	free_devices(devices);
 	free_maps(maps);
+	pci_cleanup(pci);
 	exit(EXIT_SUCCESS);
+	
+err:
+	free_devices(devices);
+	free_maps(maps);
+	pci_cleanup(pci);
+	exit(EXIT_FAILURE);
 }

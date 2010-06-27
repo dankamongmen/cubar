@@ -57,7 +57,7 @@ $(OUT)/%: $(OUT)/%.o $(OUT)/cubar.o
 
 $(OUT)/cudash: $(OUT)/cudash.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS) -lreadline
+	$(NVCC) $(NCFLAGS) -o $@ $^ $(NLFLAGS) -lreadline -lpci
 
 $(OUT)/%.ptx: $(SRC)/%.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
