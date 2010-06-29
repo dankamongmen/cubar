@@ -12,6 +12,11 @@ static unsigned thrdone,threadsmaintain = 1;
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
+#define Pthread_mutex_lock(lock) \
+	if(pthread_mutex_lock(lock)){ fprintf(stderr,"Error locking mutex\n"); }
+#define Pthread_mutex_unlock(lock) \
+	if(pthread_mutex_unlock(lock)){ fprintf(stderr,"Error unlocking mutex\n"); }
+
 static int
 init_thread(CUcontext *pctx,CUdevice dev,size_t s){
 	unsigned mfree,mtot;
@@ -45,27 +50,31 @@ typedef struct ctx {
 static void *
 thread(void *unsafectx){
 	ctx x = *(ctx *)unsafectx;
+	CUresult cerr;
 	CUcontext cu;
 
 	if(init_thread(&cu,x.dev,x.s)){
 		goto err;
 	}
-	pthread_mutex_lock(&lock);
+	Pthread_mutex_lock(&lock);
 	printf("Got context at %p\n",cu);
 	thrdone = 1;
 	pthread_cond_broadcast(&cond);
 	while(threadsmaintain){
 		pthread_cond_wait(&cond,&lock);
 	}
-	pthread_mutex_unlock(&lock);
+	Pthread_mutex_unlock(&lock);
+	if( (cerr = cuCtxDestroy(cu)) ){
+		fprintf(stderr," Error (%d) destroying CUDA context\n",cerr);
+	}
 	return NULL;
 
 err:
-	pthread_mutex_lock(&lock);
+	Pthread_mutex_lock(&lock);
 	thrdone = 1;
 	threadsmaintain = 0;
 	pthread_cond_broadcast(&cond);
-	pthread_mutex_unlock(&lock);
+	Pthread_mutex_unlock(&lock);
 	return NULL;
 }
 
@@ -105,17 +114,17 @@ int main(int argc,char **argv){
 					total,strerror(err));
 			exit(EXIT_SUCCESS);
 		}
-		pthread_mutex_lock(&lock);
+		Pthread_mutex_lock(&lock);
 		while(!thrdone && threadsmaintain){
 			pthread_cond_wait(&cond,&lock);
 		}
 		thrdone = 0;
 		if(!threadsmaintain){
-			pthread_mutex_unlock(&lock);
+			Pthread_mutex_unlock(&lock);
 			fprintf(stderr,"Thread %d exited with an error.\n",total);
 			break;
 		}
-		pthread_mutex_unlock(&lock);
+		Pthread_mutex_unlock(&lock);
 		printf("Created thread %d\n",total);
 	}	
 	exit(EXIT_SUCCESS);
