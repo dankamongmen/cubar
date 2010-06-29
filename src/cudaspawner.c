@@ -30,11 +30,14 @@ init_thread(CUcontext *pctx,CUdevice dev,size_t s){
 	if(s){
 		if( (cerr = cuMemAlloc(&ptr,s)) ){
 			fprintf(stderr," Error (%d) allocating %zub\n",cerr,s);
+			cuCtxDestroy(*pctx);
 			return -1;
 		}
 		printf("Allocated %zu (0x%zx)b at %x\n",s,s,ptr);
 	}
 	if(cuMemGetInfo(&mfree,&mtot)){
+		cuMemFree(ptr);
+		cuCtxDestroy(*pctx);
 		return -1;
 	}
 	printf("%u of %u bytes free\n",mfree,mtot);
@@ -54,7 +57,12 @@ thread(void *unsafectx){
 	CUcontext cu;
 
 	if(init_thread(&cu,x.dev,x.s)){
-		goto err;
+		Pthread_mutex_lock(&lock);
+		thrdone = 1;
+		threadsmaintain = 0;
+		pthread_cond_broadcast(&cond);
+		Pthread_mutex_unlock(&lock);
+		return NULL;
 	}
 	Pthread_mutex_lock(&lock);
 	printf("Got context at %p\n",cu);
@@ -67,14 +75,6 @@ thread(void *unsafectx){
 	if( (cerr = cuCtxDestroy(cu)) ){
 		fprintf(stderr," Error (%d) destroying CUDA context\n",cerr);
 	}
-	return NULL;
-
-err:
-	Pthread_mutex_lock(&lock);
-	thrdone = 1;
-	threadsmaintain = 0;
-	pthread_cond_broadcast(&cond);
-	Pthread_mutex_unlock(&lock);
 	return NULL;
 }
 
