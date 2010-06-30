@@ -51,19 +51,19 @@ $(TAGS): $(CSRC) $(CUDASRC) util/cubar.c $(SRC)/cubar.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	ctags --langmap=c:.c.cu.h -f $@ $^
 
-$(OUT)/cudaminimal: $(OUT)/cudaminimal.o $(OUT)/cubar.o
+$(CUDAMINIMAL): $(OUT)/cudaminimal.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
-$(OUT)/cudapinner: $(OUT)/cudapinner.o $(OUT)/cubar.o
+$(CUDAPINNER): $(OUT)/cudapinner.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
-$(OUT)/cudaspawner: $(OUT)/cudaspawner.o $(OUT)/cubar.o
+$(CUDASPAWNER): $(OUT)/cudaspawner.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
-$(OUT)/cudastuffer: $(OUT)/cudastuffer.o $(OUT)/cubar.o
+$(CUDASTUFFER): $(OUT)/cudastuffer.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
