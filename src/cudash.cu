@@ -23,6 +23,12 @@ extern "C" {
 // this might change in the future (or past).
 #define MINIMUM_ALLOC 0x100
 
+// FIXME can we not look this up at runtime in the PCI database, as well?
+// http://www.pcidatabase.com/vendor_details.php?id=606
+#define NVIDIA_VENDORID 0x10DE
+#define PCI_CONFIG_BYTES 64
+#define PCI_VGA_CLASS 0x0300
+
 typedef struct cudamap {
 	uintptr_t base;
 	size_t s;		// only what we asked for, not actually got
@@ -45,8 +51,51 @@ typedef struct cudadev {
 } cudadev;
 
 static cudamap *maps;
+struct pci_access *pci;
 static unsigned cudash_child;
 static cudadev *devices,*curdev,systemdev;
+
+static void
+free_maps(cudamap *m){
+	while(m){
+		cudamap *tm = m;
+
+		m = tm->next;
+		free(tm);
+	}
+}
+
+static void
+free_devices(cudadev *d){
+	while(d){
+		cudadev *t = d;
+		int cerr;
+
+		d = d->next;
+		free(t->devname);
+		free_maps(t->map);
+		if((cerr = cuMemFree(t->resarray)) != CUDA_SUCCESS){
+			fprintf(stderr,"Error freeing result array %d (%d)\n",t->devno,cerr);
+		}
+		if((cerr = cuCtxPopCurrent(&t->ctx)) != CUDA_SUCCESS){
+			fprintf(stderr,"Error popping context %d (%d)\n",t->devno,cerr);
+		}
+		if((cerr = cuCtxDestroy(t->ctx)) != CUDA_SUCCESS){
+			fprintf(stderr,"Error freeing context %d (%d)\n",t->devno,cerr);
+		}
+		free(t);
+	}
+}
+
+static int
+global_cleanup(void){
+	int ret = 0;
+
+	free_devices(devices);
+	free_maps(maps);
+	pci_cleanup(pci);
+	return ret;
+}
 
 static unsigned
 max_fp_precision(const cudadev *c){
@@ -95,6 +144,7 @@ cudash_quit(const char *c,const char *cmdline){
 	if(!cudash_child){
 		printf("Thank you for using the CUDA shell. Have a very CUDA day.\n");
 	}
+	global_cleanup();
 	exit(EXIT_SUCCESS);
 }
 
@@ -1307,38 +1357,6 @@ run_command(const char *cmd){
 	return r;
 }
 
-static void
-free_maps(cudamap *m){
-	while(m){
-		cudamap *tm = m;
-
-		m = tm->next;
-		free(tm);
-	}
-}
-
-static void
-free_devices(cudadev *d){
-	while(d){
-		cudadev *t = d;
-		int cerr;
-
-		d = d->next;
-		free(t->devname);
-		free_maps(t->map);
-		if((cerr = cuMemFree(t->resarray)) != CUDA_SUCCESS){
-			fprintf(stderr,"Error freeing result array %d (%d)\n",t->devno,cerr);
-		}
-		if((cerr = cuCtxPopCurrent(&t->ctx)) != CUDA_SUCCESS){
-			fprintf(stderr,"Error popping context %d (%d)\n",t->devno,cerr);
-		}
-		if((cerr = cuCtxDestroy(t->ctx)) != CUDA_SUCCESS){
-			fprintf(stderr,"Error freeing context %d (%d)\n",t->devno,cerr);
-		}
-		free(t);
-	}
-}
-
 static int
 id_cudadev(cudadev *c){
 	struct cudaDeviceProp dprop;
@@ -1428,19 +1446,70 @@ make_devices(int count){
 	return 0;
 }
 
+static struct pci_access *
+analyze_pci(unsigned *devs){
+	struct pci_access *ret;
+	struct pci_dev *d;
+
+	*devs = 0;
+	if((ret = pci_alloc()) == NULL){
+		return NULL;
+	}
+	pci_init(ret);
+	pci_scan_bus(ret);
+	for(d = ret->devices ; d ; d = d->next){
+		if(d->vendor_id == NVIDIA_VENDORID){
+			unsigned char cspace[PCI_CONFIG_BYTES];
+			char nbuf[80];
+			int c;
+
+			if(!pci_fill_info(d,PCI_FILL_CLASS | PCI_FILL_PHYS_SLOT)){
+				fprintf(stderr,"Couldn't determine PCI class\n");
+				pci_cleanup(ret);
+				return NULL;
+			}
+			if(d->device_class != PCI_VGA_CLASS){
+				continue;
+			}
+			if(!pci_read_block(d,0,cspace,sizeof(cspace))){
+				fprintf(stderr,"Couldn't read PCI configuration space\n");
+				pci_cleanup(ret);
+				return NULL;
+			}
+			c = cspace[PCI_REVISION_ID];
+			printf("nVidia PCI device %04x: Bus %02x, Dev %02x, Func %02x, Rev %02x, IRQ: %u\n",
+					d->device_id,d->bus,d->dev,d->func,c,d->irq);
+			if(!pci_lookup_name(ret,nbuf,sizeof(nbuf),
+					PCI_LOOKUP_VENDOR | PCI_LOOKUP_DEVICE,
+					d->vendor_id,d->device_id)){
+				fprintf(stderr,"Couldn't get PCI device name\n");
+				pci_cleanup(ret);
+				return NULL;
+			}
+			printf("\t%s\n",nbuf);
+			++*devs;
+		}
+	}
+	if(*devs == 0){
+		fprintf(stderr,"Warning: Didn't find any PCI nVidia display controllers...\n");
+	}else{
+		printf("Found %u PCI nVidia display controller%s\n",*devs,
+				*devs == 1 ? "" : "s");
+	}
+	return ret;
+}
+
 int main(int argc,char **argv){
 	const char *prompt = "cudash> ";
-	struct pci_access *pci = NULL;
+	unsigned pcicount;
 	char *rln = NULL;
 	int count;
 
-	if((pci = pci_alloc()) == NULL){
+	printf("The CUDA shell (C) Nick Black 2010. Compiled against libpci version %s.\n",PCILIB_VERSION);
+	if((pci = analyze_pci(&pcicount)) == NULL){
 		fprintf(stderr,"Couldn't initialize libpci\n");
 		exit(EXIT_FAILURE);
 	}
-	pci_init(pci);
-	pci_scan_bus(pci);
-	fprintf(stderr,"The CUDA shell (C) Nick Black 2010. Compiled against libpci version %s.\n",PCILIB_VERSION);
 	if(init_cuda_alldevs(&count)){
 		goto err;
 	}
@@ -1478,14 +1547,13 @@ int main(int argc,char **argv){
 			fprintf(stderr,"Warning: couldn't write history file at %s\n",HISTORY_FILE);
 		}
 	}
-	free_devices(devices);
-	free_maps(maps);
-	pci_cleanup(pci);
+	if(global_cleanup()){
+		fprintf(stderr,"Error cleaning up. Exiting.\n");
+		exit(EXIT_FAILURE);
+	}
 	exit(EXIT_SUCCESS);
 	
 err:
-	free_devices(devices);
-	free_maps(maps);
-	pci_cleanup(pci);
+	global_cleanup();
 	exit(EXIT_FAILURE);
 }
