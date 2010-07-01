@@ -22,6 +22,7 @@ BIN:=$(addprefix out/,$(basename $(notdir $(CSRC) $(CUDASRC))))
 PTX:=$(addsuffix .ptx,$(addprefix out/,$(basename $(notdir $(CUDASRC)))))
 PROFDATA:=$(addsuffix .prof,$(BIN))
 
+TAGBIN?=ctags
 CUDADIR?=/usr/
 CUDAINC?=$(CUDADIR)/include
 CUDARTLIB?=$(CUDADIR)/lib64
@@ -49,7 +50,7 @@ ptx: $(PTX)
 
 $(TAGS): $(CSRC) $(CUDASRC) util/cubar.c $(SRC)/cubar.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	ctags --langmap=c:.c.cu.h -f $@ $^
+	$(TAGBIN) --langmap=c:.c.cu.h -f $@ $^
 
 $(OUT)/%: $(OUT)/%.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
