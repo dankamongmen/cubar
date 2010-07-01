@@ -1463,7 +1463,7 @@ analyze_pci(unsigned *devs){
 			char nbuf[80];
 			int c;
 
-			if(!pci_fill_info(d,PCI_FILL_CLASS | PCI_FILL_PHYS_SLOT)){
+			if(!pci_fill_info(d,PCI_FILL_CLASS)){
 				fprintf(stderr,"Couldn't determine PCI class\n");
 				pci_cleanup(ret);
 				return NULL;
