@@ -36,8 +36,8 @@ GPUCODE?=sm_12,sm_10
 CFLAGS+=-O2 -Wall -W -Werror -march=native -mtune=native -I$(SRC) -I$(CUDAINC)
 NCFLAGS+=-O2 --compiler-options -W,-Werror,-Wextra,-march=native,-mtune=native
 NCFLAGS+=-arch $(GPUARCH) -code $(GPUCODE) --ptxas-options=-v -I$(SRC) -I$(CUDAINC)
-LFLAGS:=-lcuda
-NLFLAGS:=$(LFLAGS) -L$(CUDARTLIB) --linker-options -R$(CUDARTLIB)
+LFLAGS:=--as-needed
+NLFLAGS:=--linker-options $(LFLAGS),-R$(CUDARTLIB) -L$(CUDARTLIB) -lcuda
 PTXFLAGS:=--ptx
 TAGS:=.tags
 
