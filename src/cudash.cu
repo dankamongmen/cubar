@@ -27,7 +27,7 @@ extern "C" {
 // http://www.pcidatabase.com/vendor_details.php?id=606
 #define NVIDIA_VENDORID 0x10DE
 #define PCI_CONFIG_BYTES 64
-#define PCI_VGA_CLASS 0x0300
+#define PCI_VGA_CLASS 0x03 // only the first byte of the (2-byte) device class
 
 typedef struct cudamap {
 	uintptr_t base;
@@ -1468,7 +1468,7 @@ analyze_pci(unsigned *devs){
 				pci_cleanup(ret);
 				return NULL;
 			}
-			if(d->device_class != PCI_VGA_CLASS){
+			if(d->device_class & 0xff00 != PCI_VGA_CLASS){
 				continue;
 			}
 			if(!pci_read_block(d,0,cspace,sizeof(cspace))){
