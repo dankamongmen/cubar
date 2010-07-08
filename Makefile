@@ -1,6 +1,6 @@
 .DELETE_ON_ERROR:
 .PHONY: all bin ptx profile test fulltest clean install uninstall
-.DEFAULT_GOAL:=test
+.DEFAULT_GOAL:=all
 
 LOCALMAKE:=Makefile.local
 include $(LOCALMAKE)
