@@ -79,7 +79,7 @@ $(OUT)/cudash: $(OUT)/cudash.o $(OUT)/cubar.o
 
 $(OUT)/%.ptx: $(SRC)/%.cu
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(NVCC) $(PTXFLAGS) $(NCFLAGS) -o $@ $< $(LFLAGS)
+	$(NVCC) $(PTXFLAGS) $(NCFLAGS) -o $@ $<
 
 $(OUT)/%.o: $(SRC)/%.cu $(SRC)/cubar.h
 	@[ -d $(@D) ] || mkdir -p $(@D)
