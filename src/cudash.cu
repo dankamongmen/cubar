@@ -1476,6 +1476,10 @@ analyze_pci(unsigned *devs){
 				pci_cleanup(ret);
 				return NULL;
 			}
+			if(d->irq == 0){
+				fprintf(stderr,"Skipping device with IRQ 0\n");
+				continue;
+			}
 			c = cspace[PCI_REVISION_ID];
 			printf("nVidia PCI device %04x: Bus %02x, Dev %02x, Func %02x, Rev %02x, IRQ: %u\n",
 					d->device_id,d->bus,d->dev,d->func,c,d->irq);
