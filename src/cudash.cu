@@ -43,6 +43,7 @@ typedef struct cudadev {
 	unsigned devno;
 	struct cudadev *next;
 	int major,minor,warpsz,mpcount,conkernels;
+	int thrperblk;
 	CUcontext ctx;
 	cudamap *map;
 	unsigned addrbits;
@@ -205,6 +206,9 @@ cuda_cardinfo(const cudadev *cd){
 		return cerr;
 	}
 	if(printf("Warp size:\t %d\n",cd->warpsz) < 0){
+		return -1;
+	}
+	if(printf("Max thr/block:\t %d\n",cd->thrperblk) < 0){
 		return -1;
 	}
 	if(printf("Max FP precis:\t %u bits\n",max_fp_precision(cd)) < 0){
@@ -1371,6 +1375,11 @@ id_cudadev(cudadev *c){
 	if((cerr = cudaGetDeviceProperties(&dprop,d)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't query device %d (%d)\n",c->devno,cerr);
 		return -1;
+	}
+	cerr = cuDeviceGetAttribute(&c->thrperblk,CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK,d);
+	if(cerr != CUDA_SUCCESS || c->thrperblk <= 0){
+		fprintf(stderr,"Couldn't get threads/block for device %d (%d)\n",c->devno,cerr);
+		return cerr;
 	}
 	cerr = cuDeviceGetAttribute(&c->warpsz,CU_DEVICE_ATTRIBUTE_WARP_SIZE,d);
 	if(cerr != CUDA_SUCCESS || c->warpsz <= 0){
