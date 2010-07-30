@@ -76,7 +76,7 @@ int main(int argc,char **argv){
 		return CUDARANGER_EXIT_ERROR;
 	}
 	if(max <= min){
-		fprintf(stderr,"Invalid arguments: max (%ju) <= min (%ju)\n",
+		fprintf(stderr,"Invalid arguments: max (%llu) <= min (%llu)\n",
 				max,min);
 		usage(*argv);
 		return CUDARANGER_EXIT_ERROR;
