@@ -355,6 +355,7 @@ cudash_read(const char *c,const char *cmdline){
 		}
 		return 0;
 	}
+	ENFORCE_ARGEND(c,ep);
 	if(printf("Reading [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
 	}
@@ -428,6 +429,7 @@ cudash_memset(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid wvalue: %s\n",cmdline);
 		return 0;
 	}
+	ENFORCE_ARGEND(c,ep);
 	cmdline = ep;
 	if(printf("Writing [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
 		return -1;
@@ -475,6 +477,7 @@ cudash_write(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid wvalue: %s\n",cmdline);
 		return 0;
 	}
+	ENFORCE_ARGEND(c,ep);
 	cmdline = ep;
 	res = curdev->resarray;
 	if(printf("Writing [0x%llx:0x%llx) (0x%llx)\n",base,base + size,size) < 0){
@@ -518,6 +521,7 @@ cudash_clocks(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid clocks: %s\n",cmdline);
 		return 0;
 	}
+	ENFORCE_ARGEND(c,ep);
 	clockkernel<<<dg,db>>>(clocks);
 	if((cerr = cuCtxSynchronize()) != CUDA_SUCCESS){
 		if(fprintf(stderr,"Error spinning on device (%d)\n",cerr) < 0){
