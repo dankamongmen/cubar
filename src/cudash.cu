@@ -29,6 +29,17 @@ extern "C" {
 #define PCI_CONFIG_BYTES 64
 #define PCI_VGA_CLASS 0x03 // only the first byte of the (2-byte) device class
 
+#define ENFORCE_ARGEND(c,cmdline)					\
+	do{								\
+		while(isspace(*cmdline)){ ++cmdline; }			\
+		if(strcmp(cmdline,"")){					\
+			if(fprintf(stderr,"too many options to %s\n",c) < 0){	\
+				return -1;				\
+			}						\
+			return 0;					\
+		}							\
+	}while(0)
+
 typedef struct cudamap {
 	uintptr_t base;
 	size_t s;		// only what we asked for, not actually got
@@ -586,6 +597,7 @@ cudash_allocat(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid addr: %s\n",cmdline);
 		return 0;
 	}
+	ENFORCE_ARGEND(c,ep);
 	if(addr % MINIMUM_ALLOC){
 		fprintf(stderr,"Insufficiently aligned: 0x%llx\n",addr);
 		return 0;
@@ -674,7 +686,7 @@ cudash_pinmax(const char *c,const char *cmdline){
 	void *p;
 
 	if(strcmp(cmdline,"")){
-		fprintf(stderr,"%s doesn't support options\n");
+		fprintf(stderr,"%s doesn't support options\n",c);
 		return 0;
 	}
 	if((size = cuda_hostalloc_max(stdout,&p,1,flags)) == 0){
@@ -715,6 +727,7 @@ cudash_pin(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid size: %s\n",cmdline);
 		return 0;
 	}
+	ENFORCE_ARGEND(c,ep);
 	if((cerr = cuMemHostAlloc(&p,size,flags)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't host-allocate %llub (%d)\n",size,cerr);
 		return 0;
@@ -743,6 +756,7 @@ static int
 cudash_fork(const char *c,const char *cmdline){
 	pid_t pid;
 
+	ENFORCE_ARGEND(c,cmdline);
 	if(fflush(stdout) || fflush(stderr)){
 		fprintf(stderr,"Couldn't flush output (%s?)\n",strerror(errno));
 		return -1;
@@ -791,6 +805,7 @@ cudash_free(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid base: %s\n",cmdline);
 		return 0;
 	}
+	ENFORCE_ARGEND(c,ep);
 	m = &curdev->map;
 	while(*m){
 		CUresult cerr;
@@ -811,7 +826,7 @@ cudash_free(const char *c,const char *cmdline){
 			return -1;
 		}
 		if((*m)->maps != MAP_FAILED){
-			if(printf(" maps %012p",(*m)->maps) < 0){
+			if(printf(" maps %12p",(*m)->maps) < 0){
 				return -1;
 			}
 			fprintf(stderr,"Freeing mappings is not yet implemented\n");
@@ -884,6 +899,7 @@ cudash_maps(const char *c,const char *cmdline){
 	cudadev *d;
 	cudamap *m;
 
+	ENFORCE_ARGEND(c,cmdline);
 	for(m = maps ; m ; m = m->next){
 		if(printf("(host) %10zu (0x%08x) @ 0x%012jx\n",
 				m->s,m->s,(uintmax_t)m->base) < 0){
@@ -907,7 +923,7 @@ cudash_maps(const char *c,const char *cmdline){
 				return -1;
 			}
 			if(m->maps != MAP_FAILED){
-				if(printf(" maps %012p",m->maps) < 0){
+				if(printf(" maps %12p",m->maps) < 0){
 					return -1;
 				}
 			}else if(m->allocno){
@@ -947,6 +963,7 @@ cudash_verify(const char *c,const char *cmdline){
 	cudadev *d;
 	cudamap *m;
 
+	ENFORCE_ARGEND(c,cmdline);
 	res = curdev->resarray;
 	for(d = devices ; d ; d = d->next){
 		for(m = d->map ; m ; m = m->next){
@@ -955,7 +972,7 @@ cudash_verify(const char *c,const char *cmdline){
 				return -1;
 			}
 			if(m->maps != MAP_FAILED){
-				if(printf(" (maps %012p)",m->maps) < 0){
+				if(printf(" (maps %12p)",m->maps) < 0){
 					return -1;
 				}
 			}
@@ -1006,6 +1023,7 @@ cudash_wverify(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid value: %s\n",cmdline);
 		return 0;
 	}
+	ENFORCE_ARGEND(c,ep);
 	cmdline = ep;
 	res = curdev->resarray;
 	for(d = devices ; d ; d = d->next){
@@ -1015,7 +1033,7 @@ cudash_wverify(const char *c,const char *cmdline){
 				return -1;
 			}
 			if(m->maps != MAP_FAILED){
-				if(printf(" (maps %012p)",m->maps) < 0){
+				if(printf(" (maps %12p)",m->maps) < 0){
 					return -1;
 				}
 			}
@@ -1079,7 +1097,7 @@ list_contexts(void){
 static int
 cudash_ctxdump(const char *c,const char *cmdline){
 	if(strcmp(cmdline,"")){
-		fprintf(stderr,"%s doesn't support options\n");
+		fprintf(stderr,"%s doesn't support options\n",c);
 		return 0;
 	}
 	return list_contexts();
@@ -1096,6 +1114,7 @@ cudash_device(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid devno: %s\n",cmdline);
 		return 0;
 	}
+	ENFORCE_ARGEND(c,ep);
 	for(d = devices ; d ; d = d->next){
 		if(d->devno == devno){
 			curdev = d;
@@ -1119,17 +1138,6 @@ getdev(unsigned devno){
 	}
 	return d;
 }
-
-#define ENFORCE_ARGEND(c,cmdline)					\
-	do{								\
-	while(isspace(*cmdline)){ ++cmdline; }				\
-	if(strcmp(cmdline,"")){						\
-		if(fprintf(stderr,"too many options to %s\n") < 0){	\
-			return -1;					\
-		}							\
-		return 0;						\
-	}								\
-	}while(0)
 
 static int
 cudash_registry(const char *c,const char *cmdline){
