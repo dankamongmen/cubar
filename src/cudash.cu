@@ -651,7 +651,7 @@ cudash_allocmax(const char *c,const char *cmdline){
 	CUdeviceptr p;
 
 	if(strcmp(cmdline,"")){
-		fprintf(stderr,"%s doesn't support options\n");
+		fprintf(stderr,"%s doesn't support options\n",c);
 		return 0;
 	}
 	if((size = cuda_alloc_max(stdout,&p,1)) == 0){
