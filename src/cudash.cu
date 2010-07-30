@@ -253,10 +253,7 @@ list_cards(void){
 
 static int
 cudash_cards(const char *c,const char *cmdline){
-	if(strcmp(cmdline,"")){
-		fprintf(stderr,"%s doesn't support options\n");
-		return 0;
-	}
+	ENFORCE_ARGEND(c,cmdline);
 	return list_cards();
 }
 
@@ -662,10 +659,7 @@ cudash_allocmax(const char *c,const char *cmdline){
 	uintmax_t size;
 	CUdeviceptr p;
 
-	if(strcmp(cmdline,"")){
-		fprintf(stderr,"%s doesn't support options\n",c);
-		return 0;
-	}
+	ENFORCE_ARGEND(c,cmdline);
 	if((size = cuda_alloc_max(stdout,&p,1)) == 0){
 		return 0;
 	}
@@ -685,10 +679,7 @@ cudash_pinmax(const char *c,const char *cmdline){
 	CUresult cerr;
 	void *p;
 
-	if(strcmp(cmdline,"")){
-		fprintf(stderr,"%s doesn't support options\n",c);
-		return 0;
-	}
+	ENFORCE_ARGEND(c,cmdline);
 	if((size = cuda_hostalloc_max(stdout,&p,1,flags)) == 0){
 		return 0;
 	}
@@ -1096,10 +1087,7 @@ list_contexts(void){
 
 static int
 cudash_ctxdump(const char *c,const char *cmdline){
-	if(strcmp(cmdline,"")){
-		fprintf(stderr,"%s doesn't support options\n",c);
-		return 0;
-	}
+	ENFORCE_ARGEND(c,cmdline);
 	return list_contexts();
 }
 
