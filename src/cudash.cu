@@ -32,11 +32,9 @@ extern "C" {
 #define ENFORCE_ARGEND(c,cmdline)					\
 	do{								\
 		while(isspace(*cmdline)){ ++cmdline; }			\
-		if(strcmp(cmdline,"")){					\
-			if(fprintf(stderr,"too many options to %s\n",c) < 0){	\
-				return -1;				\
-			}						\
-			return 0;					\
+		if(strcmp(cmdline,"") &&				\
+		 fprintf(stderr,"too many options to \"%s\"\n",c) < 0){	\
+			return -1;					\
 		}							\
 	}while(0)
 
@@ -1331,7 +1329,7 @@ run_command(const char *cmd){
 		tptr = lookup_command(toke,cmd - toke);
 	}
 	if(tptr == NULL){
-		if(fprintf(stderr,"Invalid command: \"%.*s\"\n",cmd - toke,toke) < 0){
+		if(fprintf(stderr,"Invalid command\n") < 0){
 			return -1;
 		}
 		return 0;
@@ -1341,11 +1339,11 @@ run_command(const char *cmd){
 		gettimeofday(&t1,NULL);
 		timersub(&t1,&t0,&tsub);
 		if(tsub.tv_sec){
-			if(printf("Command took %u.%04us\n",tsub.tv_sec,tsub.tv_usec / 1000) < 0){
+			if(printf("Command took %lu.%04lus\n",tsub.tv_sec,tsub.tv_usec / 1000) < 0){
 				return -1;
 			}
 		}else if(tsub.tv_usec / 1000){
-			if(printf("Command took %ums\n",tsub.tv_usec / 1000) < 0){
+			if(printf("Command took %lums\n",tsub.tv_usec / 1000) < 0){
 				return -1;
 			}
 		}
@@ -1392,7 +1390,7 @@ id_cudadev(cudadev *c){
 	}else{
 		c->addrbits = 40;
 	}
-#define CUDASTRLEN 80
+#define CUDASTRLEN ((size_t)80)
 	if((c->devname = (char *)malloc(CUDASTRLEN)) == NULL){
 		fprintf(stderr,"Couldn't allocate %zub (%s?)\n",CUDASTRLEN,strerror(errno));
 		return -1;
