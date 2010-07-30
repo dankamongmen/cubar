@@ -1319,8 +1319,8 @@ cudash_help(const char *c,const char *cmdline){
 
 static int
 run_command(const char *cmd){
+	typeof(*cmdtable) *tptr = NULL;
 	struct timeval t0,t1,tsub;
-	cudashfxn fxn = NULL;
 	const char *toke;
 	int r;
 
@@ -1332,20 +1332,16 @@ run_command(const char *cmd){
 		++cmd;
 	}
 	if(cmd != toke){
-		typeof(*cmdtable) *tptr;
-
-		if( (tptr = lookup_command(toke,cmd - toke)) ){
-			fxn = tptr->fxn;
-		}
+		tptr = lookup_command(toke,cmd - toke);
 	}
-	if(fxn == NULL){
+	if(tptr == NULL){
 		if(fprintf(stderr,"Invalid command: \"%.*s\"\n",cmd - toke,toke) < 0){
 			return -1;
 		}
 		return 0;
 	}
 	gettimeofday(&t0,NULL);
-	if((r = fxn(toke,cmd)) == 0){
+	if((r = tptr->fxn(tptr->cmd,cmd)) == 0){
 		gettimeofday(&t1,NULL);
 		timersub(&t1,&t0,&tsub);
 		if(tsub.tv_sec){
