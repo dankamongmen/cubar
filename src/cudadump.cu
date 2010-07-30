@@ -126,8 +126,7 @@ check_const_ram(const unsigned *max){
 #define RANGER "out/cudaranger"
 
 static int
-divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned unit,
-					unsigned gran,uint32_t *results,
+divide_address_space(int devno,uintmax_t off,uintmax_t s,unsigned gran,
 					uintmax_t *worked){
 	char min[40],max[40],dev[20];
 	char * const argv[] = { RANGER, dev, min, max, NULL };
@@ -210,18 +209,18 @@ cudadump(int devno,uintmax_t tmem,unsigned unit,uintmax_t gran,uint32_t *results
 		return -1;
 	}
 	printf("  Dumping %jub...\n",tmem);
-	if(divide_address_space(devno,NOMANSPACE,tmem,unit,gran,results,&worked)){
+	if(divide_address_space(devno,NOMANSPACE,tmem,gran,&worked)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
 	printf("  Readable: %jub/%jub (%f%%)\n",worked,tmem,(float)worked / tmem * 100);
 	worked = 0;
 	printf("  Dumping address space (%jub)...\n",(uintmax_t)0x100000000ull - NOMANSPACE);
-	if(divide_address_space(devno,NOMANSPACE,0x100000000ull - NOMANSPACE,unit,gran,results,&worked)){
+	if(divide_address_space(devno,NOMANSPACE,0x100000000ull - NOMANSPACE,gran,&worked)){
 		fprintf(stderr,"  Error probing CUDA memory!\n");
 		return -1;
 	}
-	printf("  Readable: %jub/%jub (%f%%)\n",worked,0x100000000ull,(float)worked / 0x100000000 * 100);
+	printf("  Readable: %jub/%llub (%f%%)\n",worked,0x100000000ull,(float)worked / 0x100000000 * 100);
 	printf(" Success.\n");
 	return 0;
 }
