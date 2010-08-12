@@ -685,15 +685,15 @@ cudash_pinmax(const char *c,const char *cmdline){
 	if((size = cuda_hostalloc_max(stdout,&p,1,flags)) == 0){
 		return 0;
 	}
-	printf("Allocated %llub host memory @ %p\n",size,p);
+	printf("Allocated %jub host memory @ %p\n",size,p);
 	// FIXME map into each card's memory space, not just current's
 	if((cerr = cuMemHostGetDevicePointer(&cd,p,curdev->devno)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't map %llub @ %p on dev %d (%d)\n",
+		fprintf(stderr,"Couldn't map %jub @ %p on dev %d (%d)\n",
 				size,p,curdev->devno,cerr);
 		cuMemFreeHost(p);
 		return 0;
 	}
-	printf("Mapped %llub into card %d @ %p\n",size,0,cd);
+	printf("Mapped %jub into card %d @ %p\n",size,0,cd);
 	if(create_ctx_map(&systemdev,(uintptr_t)p,size)){
 		cuMemFreeHost(p);
 		return 0;
@@ -814,7 +814,7 @@ cudash_free(const char *c,const char *cmdline){
 			m = &(*m)->next;
 			continue;
 		}
-		if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
+		if(printf("(%4d) %10zu (0x%08zx) @ 0x%012jx",
 			curdev->devno,(*m)->s,(*m)->s,(uintmax_t)(*m)->base) < 0){
 			return -1;
 		}
@@ -894,7 +894,7 @@ cudash_maps(const char *c,const char *cmdline){
 
 	ENFORCE_ARGEND(c,cmdline);
 	for(m = maps ; m ; m = m->next){
-		if(printf("(host) %10zu (0x%08x) @ 0x%012jx\n",
+		if(printf("(host) %10zu (0x%08zx) @ 0x%012jx\n",
 				m->s,m->s,(uintmax_t)m->base) < 0){
 			return -1;
 		}
@@ -906,12 +906,12 @@ cudash_maps(const char *c,const char *cmdline){
 			if((uintmax_t)m->base > b){
 				uintmax_t skip = (uintmax_t)m->base - b;
 
-				if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx unallocated\n",
+				if(printf("(%4d) %10zu (0x%08zx) @ 0x%012jx unallocated\n",
 						d->devno,skip,skip,b) < 0){
 					return -1;
 				}
 			}
-			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
+			if(printf("(%4d) %10zu (0x%08zx) @ 0x%012jx",
 					d->devno,m->s,m->s,(uintmax_t)m->base) < 0){
 				return -1;
 			}
@@ -924,7 +924,7 @@ cudash_maps(const char *c,const char *cmdline){
 					return -1;
 				}
 			}else{
-				if(printf(" cudash result buffer",m->maps) < 0){
+				if(printf(" cudash result buffer") < 0){
 					return -1;
 				}
 			}
@@ -936,7 +936,7 @@ cudash_maps(const char *c,const char *cmdline){
 		if(b != (1ull << d->addrbits)){
 			uintmax_t skip = (1ull << d->addrbits) - b;
 
-			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx unallocated\n",
+			if(printf("(%4d) %10zu (0x%08zx) @ 0x%012jx unallocated\n",
 					d->devno,skip,skip,b) < 0){
 				return -1;
 			}
@@ -960,7 +960,7 @@ cudash_verify(const char *c,const char *cmdline){
 	res = curdev->resarray;
 	for(d = devices ; d ; d = d->next){
 		for(m = d->map ; m ; m = m->next){
-			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
+			if(printf("(%4d) %10zu (0x%08zx) @ 0x%012jx",
 					d->devno,m->s,m->s,(uintmax_t)m->base) < 0){
 				return -1;
 			}
@@ -1021,7 +1021,7 @@ cudash_wverify(const char *c,const char *cmdline){
 	res = curdev->resarray;
 	for(d = devices ; d ; d = d->next){
 		for(m = d->map ; m ; m = m->next){
-			if(printf("(%4d) %10zu (0x%08x) @ 0x%012jx",
+			if(printf("(%4d) %10zu (0x%08zx) @ 0x%012jx",
 					d->devno,m->s,m->s,(uintmax_t)m->base) < 0){
 				return -1;
 			}
