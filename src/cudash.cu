@@ -544,6 +544,7 @@ cudash_alloc(const char *c,const char *cmdline){
 		fprintf(stderr,"Invalid size: %s\n",cmdline);
 		return 0;
 	}
+	ENFORCE_ARGEND(c,ep);
 	if((cerr = cuMemAlloc(&p,size)) != CUDA_SUCCESS){
 		fprintf(stderr,"Couldn't allocate %llub (%d)\n",size,cerr);
 		return 0;
