@@ -48,10 +48,13 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem,int *state){
 		fprintf(stderr," Couldn't create context (%d)\n",cerr);
 		goto err;
 	}
-	if((cerr = cuMemGetInfo(mem,tmem)) != CUDA_SUCCESS){
+	size_t cudatmem,cudamem;
+	if((cerr = cuMemGetInfo(&cudamem,&cudatmem)) != CUDA_SUCCESS){
 		cuCtxDetach(ctx);
 		goto err;
 	}
+	*mem = cudamem;
+	*tmem = cudatmem;
 	*state = dprop.computeMode;
 	if(printf("%d.%d %s %s %u/%uMB free %s\n",
 		major,minor,

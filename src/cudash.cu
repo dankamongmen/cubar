@@ -160,7 +160,7 @@ cudash_quit(const char *c,const char *cmdline){
 
 static int
 cuda_cardinfo(const cudadev *cd){
-	unsigned mem,tmem;
+	size_t mem,tmem;
 	int attr,cerr;
 	CUdevice c;
 

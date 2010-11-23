@@ -63,7 +63,7 @@ readkernel(unsigned *aptr,const unsigned *bptr,uint32_t *results){
 		psum[blockDim.x * blockIdx.x + threadIdx.x];
 }
 
-static cudadump_e
+static inline cudadump_e
 dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,uint32_t *results){
 	struct timeval time0,time1,timer;
 	dim3 dblock(BLOCK_SIZE,1,1);
