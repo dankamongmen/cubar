@@ -36,6 +36,7 @@ GPUARCH?=compute_10
 GPUCODE?=sm_12,sm_10
 # FIXME restore -Werror!
 CFLAGS+=-O2 -Wall -W -Wextra -march=native -mtune=native -I$(SRC) -I$(CUDAINC)
+MPCFLAGS:=-pthread $(CFLAGS)
 NCFLAGS+=-O2 --compiler-options -W,-Wall,-Wextra,-march=native,-mtune=native
 NCFLAGS+=-arch $(GPUARCH) -code $(GPUCODE) --ptxas-options=-v -I$(SRC) -I$(CUDAINC)
 LFLAGS:=--as-needed
@@ -64,7 +65,7 @@ $(CUDAPINNER): $(OUT)/cudapinner.o $(OUT)/cubar.o
 
 $(CUDASPAWNER): $(OUT)/cudaspawner.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+	$(CC) $(MPCFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDASTUFFER): $(OUT)/cudastuffer.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
