@@ -39,8 +39,8 @@ CFLAGS+=-O2 -Wall -W -Wextra -march=native -mtune=native -I$(SRC) -I$(CUDAINC)
 NCFLAGS+=-O2 --compiler-options -W,-Wall,-Wextra,-march=native,-mtune=native
 NCFLAGS+=-arch $(GPUARCH) -code $(GPUCODE) --ptxas-options=-v -I$(SRC) -I$(CUDAINC)
 LFLAGS:=--as-needed
-NLFLAGS:=--linker-options $(LFLAGS),-R$(CUDARTLIB) -L$(CUDARTLIB) -lcuda
-LFLAGS:=$(addprefix -Wl,$(LFLAGS)) -lcuda
+NLFLAGS:=--linker-options $(LFLAGS),-R$(CUDARTLIB) -L$(CUDARTLIB) -lcuda -lcudart
+LFLAGS:=$(addprefix -Wl,$(LFLAGS)) -lcuda -lcudart
 PTXFLAGS:=--ptx
 TAGS:=.tags
 
@@ -67,6 +67,10 @@ $(CUDASPAWNER): $(OUT)/cudaspawner.o $(OUT)/cubar.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDASTUFFER): $(OUT)/cudastuffer.o $(OUT)/cubar.o
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+
+$(CUDABOUNDER): $(OUT)/cudabounder.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
