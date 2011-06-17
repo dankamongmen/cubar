@@ -82,7 +82,7 @@ dump_cuda(uintmax_t tmin,uintmax_t tmax,unsigned unit,uint32_t *results){
 		dgrid.x,dgrid.y,dblock.x,dblock.y,dblock.z,tmin,tmax,s,unit);
 	gettimeofday(&time0,NULL);
 	readkernel<<<dgrid,dblock>>>((unsigned *)tmin,(unsigned *)tmax,results);
-	if( (cerr = cudaThreadSynchronize()) ){
+	if((cerr = cudaThreadSynchronize()) != 0){ // FIXME workaround nvcc 4.0
 		cudaError_t err;
 
 		if(cerr != CUDA_ERROR_LAUNCH_FAILED && cerr != CUDA_ERROR_DEINITIALIZED){

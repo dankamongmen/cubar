@@ -18,7 +18,7 @@ usage(const char *a0){
 }
 
 int main(int argc,char **argv){
-	unsigned oldptr = 0,ptr;
+	CUdeviceptr oldptr = 0,ptr;
 	uintmax_t total = 0,s;
 	unsigned long zul,sig;
 	CUcontext ctx;

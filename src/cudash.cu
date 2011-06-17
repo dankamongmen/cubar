@@ -1536,7 +1536,7 @@ int main(int argc,char **argv){
 		if(read_history(HISTORY_FILE)){
 			// FIXME no history file for you! oh well
 		}
-		while( (rln = readline(prompt)) ){
+		while((rln = readline(prompt)) != NULL){ // FIXME nvcc 4.0 workaround
 			// An empty string ought neither be saved to history nor run.
 			if(strcmp("",rln)){
 				if(add_to_history(rln)){
