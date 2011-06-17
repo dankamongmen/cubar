@@ -27,7 +27,7 @@ CUDADIR?=/usr/
 CUDAINC?=$(CUDADIR)/include
 CUDARTLIB?=$(CUDADIR)/lib64
 
-TARGET?=/usr/local
+TARGET?=/usr/
 TARGBIN?=$(TARGET)/bin
 
 INSTALL?=install
