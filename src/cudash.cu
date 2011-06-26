@@ -1503,7 +1503,7 @@ int main(int argc,char **argv){
 	char *rln = NULL;
 	int count;
 
-	printf("The CUDA shell (C) Nick Black 2010. Compiled against libpci version %s.\n",PCILIB_VERSION);
+	printf("The CUDA shell (C) Nick Black 2011. Compiled against libpci version %s.\n",PCILIB_VERSION);
 	if((pci = analyze_pci(&pcicount)) == NULL){
 		fprintf(stderr,"Couldn't initialize libpci\n");
 		exit(EXIT_FAILURE);
