@@ -19,7 +19,7 @@ static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 static int
 init_thread(CUcontext *pctx,CUdevice dev,size_t s){
-	unsigned mfree,mtot;
+	size_t mfree,mtot;
 	CUdeviceptr ptr;
 	CUresult cerr;
 
@@ -33,14 +33,14 @@ init_thread(CUcontext *pctx,CUdevice dev,size_t s){
 			cuCtxDestroy(*pctx);
 			return -1;
 		}
-		printf("Allocated %zu (0x%zx)b at %x\n",s,s,ptr);
+		printf("Allocated %zu (0x%zx)b at %llx\n",s,s,ptr);
 	}
 	if(cuMemGetInfo(&mfree,&mtot)){
 		cuMemFree(ptr);
 		cuCtxDestroy(*pctx);
 		return -1;
 	}
-	printf("%u of %u bytes free\n",mfree,mtot);
+	printf("%zu of %zu bytes free\n",mfree,mtot);
 	return 0;
 }
 

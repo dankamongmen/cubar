@@ -17,13 +17,13 @@ basic_params(CUdeviceptr p,size_t s){
 		fprintf(stderr,"Couldn't alloc+init %zu base (%d)\n",s,cerr);
 		return -1;
 	}
-	printf("Got secondary %zub allocation at %p\n",s,p2);
-	if( (cerr = cuMemFree(p2)) ){
+	printf("Got secondary %zub allocation at %llu\n",s,p2);
+	if((cerr = cuMemFree(p2)) != 0){ // FIXME nvcc ->4.0 workaround
 		fprintf(stderr,"Couldn't free %zu base (%d)\n",s,cerr);
 		return -1;
 	}
 	// FIXME not very rigorous, not at all...[frown]
-	printf("Minimum cuMalloc() alignment might be: %u\n",p2 - p);
+	printf("Minimum cuMalloc() alignment might be: %llu\n",p2 - p);
 	return 0;
 }
 
@@ -45,16 +45,16 @@ shoveover(CUdeviceptr *r,size_t s){
 	CUdeviceptr tmp;
 	CUresult cerr;
 
-	if( (cerr = cuMemAlloc(&tmp,shovelen)) ){
+	if((cerr = cuMemAlloc(&tmp,shovelen)) != 0){
 		fprintf(stderr,"Couldn't alloc+init %zu shove (%d)\n",shovelen,cerr);
 		return -1;
 	}
-	printf("Got %zub shovebuf at %p\n",shovelen,tmp);
+	printf("Got %zub shovebuf at %llu\n",shovelen,tmp);
 	if( (cerr = cuMemAlloc(r,s)) || (cerr = cuMemsetD32(*r,0,s / sizeof(uint32_t))) ){
 		fprintf(stderr,"Couldn't alloc+init %zu resarr (%d)\n",s,cerr);
 		return -1;
 	}
-	if( (cerr = cuMemFree(tmp)) ){
+	if((cerr = cuMemFree(tmp)) != 0){
 		fprintf(stderr,"Couldn't free %zu shove (%d)\n",shovelen,cerr);
 		return -1;
 	}
@@ -80,7 +80,7 @@ int main(int argc,char **argv){
 		fprintf(stderr,"Couldn't alloc+init %zu base (%d)\n",s,cerr);
 		exit(EXIT_FAILURE);
 	}
-	printf("Got base %zub allocation at %p\n",s,ptr);
+	printf("Got base %zub allocation at %llu\n",s,ptr);
 	if(basic_params(ptr,s)){
 		exit(EXIT_FAILURE);
 	}
@@ -88,10 +88,10 @@ int main(int argc,char **argv){
 		exit(EXIT_FAILURE);
 	}
 	if(res <= ptr){ // FIXME...see loop detect below
-		fprintf(stderr,"Unexpected pointer arrangement (%p >= %p)\n",ptr,res);
+		fprintf(stderr,"Unexpected pointer arrangement (%llu >= %llu)\n",ptr,res);
 		exit(EXIT_FAILURE);
 	}
-	printf("Got %zub resarr at %p (%ub gap)\n",
+	printf("Got %zub resarr at %llu (%llub gap)\n",
 			BYTES_PER_KERNEL * sizeof(uint32_t),res,res - ptr);
 	z = 0;
 	while((cerr = cuCtxSynchronize()) == CUDA_SUCCESS){
@@ -100,7 +100,7 @@ int main(int argc,char **argv){
 		touchbytes<<<dg,db>>>(ptr,z,res);
 		// FIXME check res
 		if(((z += BYTES_PER_KERNEL) + ptr) > res){
-			printf("Hit result array at %p; breaking loop\n",res);
+			printf("Hit result array at %llu; breaking loop\n",res);
 			break;
 		}
 	}

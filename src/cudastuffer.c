@@ -18,7 +18,7 @@ usage(const char *a0){
 }
 
 int main(int argc,char **argv){
-	unsigned oldptr = 0,ptr;
+	CUdeviceptr oldptr = 0,ptr;
 	uintmax_t total = 0,s;
 	unsigned long zul,sig;
 	CUcontext ctx;
@@ -54,12 +54,12 @@ int main(int argc,char **argv){
 	}
 	zul = 0;
 	do{
-		if(printf("  Allocation at 0x%x (expected 0x%x)\n",ptr,oldptr) < 0){
+		if(printf("  Allocation at 0x%llx (expected 0x%llx)\n",ptr,oldptr) < 0){
 			exit(EXIT_FAILURE);
 		}
 		total += s;
 		if(ptr != oldptr){
-			if(printf("  Memory hole: 0x%x->0x%x (0x%xb)\n",
+			if(printf("  Memory hole: 0x%llx->0x%llx (0x%llxb)\n",
 				oldptr,ptr - 1,ptr - oldptr) < 0){
 				exit(EXIT_SUCCESS);
 			}

@@ -38,6 +38,8 @@ extern "C" {
 		}							\
 	}while(0)
 
+#define CUCTXSIZE 48 // FIXME huh?
+
 typedef struct cudamap {
 	uintptr_t base;
 	size_t s;		// only what we asked for, not actually got
@@ -172,7 +174,7 @@ cuda_cardinfo(const cudadev *cd){
 		return -1;
 	}
 #define MB(x) (((x) >> 20u) + !!(x % (1024 * 1024)))
-	if(printf("Memory free:\t %u/%u (%u/%u MB, %2.2f%%)\n",mem,tmem,
+	if(printf("Memory free:\t %zu/%zu (%zu/%zu MB, %2.2f%%)\n",mem,tmem,
 			MB(mem),MB(tmem),(float)mem * 100 / tmem) < 0){
 		return -1;
 	}
@@ -553,7 +555,7 @@ cudash_alloc(const char *c,const char *cmdline){
 		cuMemFree(p);
 		return 0;
 	}
-	printf("Allocated %llub @ %p\n",size,p);
+	printf("Allocated %llub @ %llu\n",size,p);
 	return 0;
 }
 
@@ -653,7 +655,7 @@ cudash_allocat(const char *c,const char *cmdline){
 		cuMemFree(p);
 		return 0;
 	}
-	printf("Allocated %llub @ %p\n",size,p);
+	printf("Allocated %llub @ %llu\n",size,p);
 	return 0;
 }
 
@@ -670,7 +672,7 @@ cudash_allocmax(const char *c,const char *cmdline){
 		cuMemFree(p);
 		return 0;
 	}
-	printf("Allocated %llub @ %p\n",size,p);
+	printf("Allocated %jub @ 0x%llx\n",size,p);
 	return 0;
 }
 
@@ -689,12 +691,12 @@ cudash_pinmax(const char *c,const char *cmdline){
 	printf("Allocated %jub host memory @ %p\n",size,p);
 	// FIXME map into each card's memory space, not just current's
 	if((cerr = cuMemHostGetDevicePointer(&cd,p,curdev->devno)) != CUDA_SUCCESS){
-		fprintf(stderr,"Couldn't map %jub @ %p on dev %d (%d)\n",
+		fprintf(stderr,"Couldn't map %jub @ 0x%p on dev %d (%d)\n",
 				size,p,curdev->devno,cerr);
 		cuMemFreeHost(p);
 		return 0;
 	}
-	printf("Mapped %jub into card %d @ %p\n",size,0,cd);
+	printf("Mapped %jub into card %d @ 0x%llx\n",size,0,cd);
 	if(create_ctx_map(&systemdev,(uintptr_t)p,size)){
 		cuMemFreeHost(p);
 		return 0;
@@ -733,7 +735,7 @@ cudash_pin(const char *c,const char *cmdline){
 		cuMemFreeHost(p);
 		return 0;
 	}
-	printf("Mapped %llub into card %d @ %p\n",size,0,cd);
+	printf("Mapped %llub into card %d @ %llu\n",size,0,cd);
 	if(create_ctx_map(&systemdev,(uintptr_t)p,size)){
 		cuMemFreeHost(p);
 		return 0;
@@ -844,7 +846,7 @@ cudash_free(const char *c,const char *cmdline){
 }
 
 static int
-cudash_exec(const char *c,const char *cmdline){
+cudash_exec(const char *c __attribute__ ((unused)),const char *cmdline){
 	pid_t pid;
 
 	if(fflush(stdout) || fflush(stderr)){
@@ -1061,29 +1063,17 @@ cudash_wverify(const char *c,const char *cmdline){
 	return 0;
 }
 
-#define CUCTXSIZE 48 // FIXME just a guess
-
 static int
 list_contexts(void){
 	cudadev *c;
 
 	for(c = devices ; c ; c = c->next){
-		CUcontext ctx = c->ctx;
-		unsigned z;
-
 		if(printf("Card %d:\t\t %s, capability %d.%d, %d MP%s\n",
 			c->devno,c->devname,c->major,c->minor,c->mpcount,
 			c->mpcount == 1 ? "" : "s") < 0){
 			return -1;
 		}
-		for(z = 0 ; z < CUCTXSIZE ; ++z){
-			if(printf(" %02x",((const unsigned char *)ctx)[z]) < 0){
-				return -1;
-			}
-		}
-		if(printf(" (%p)\n",ctx) < 0){
-			return -1;
-		}
+		// FIXME...
 	}
 	return 0;
 }
@@ -1293,7 +1283,7 @@ list_commands(void){
 }
 
 static int
-cudash_help(const char *c,const char *cmdline){
+cudash_help(const char *c __attribute__ ((unused)),const char *cmdline){
 	if(strcmp(cmdline,"") == 0){
 		return list_commands();
 	}else{
@@ -1513,7 +1503,7 @@ int main(int argc,char **argv){
 	char *rln = NULL;
 	int count;
 
-	printf("The CUDA shell (C) Nick Black 2010. Compiled against libpci version %s.\n",PCILIB_VERSION);
+	printf("The CUDA shell (C) Nick Black 2011. Compiled against libpci version %s.\n",PCILIB_VERSION);
 	if((pci = analyze_pci(&pcicount)) == NULL){
 		fprintf(stderr,"Couldn't initialize libpci\n");
 		exit(EXIT_FAILURE);
@@ -1536,7 +1526,7 @@ int main(int argc,char **argv){
 		if(read_history(HISTORY_FILE)){
 			// FIXME no history file for you! oh well
 		}
-		while( (rln = readline(prompt)) ){
+		while((rln = readline(prompt)) != NULL){ // FIXME nvcc 4.0 workaround
 			// An empty string ought neither be saved to history nor run.
 			if(strcmp("",rln)){
 				if(add_to_history(rln)){
