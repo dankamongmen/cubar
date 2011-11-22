@@ -64,7 +64,7 @@ $(CUDAPINNER): $(OUT)/cudapinner.o $(OUT)/cubar.o
 
 $(CUDASPAWNER): $(OUT)/cudaspawner.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+	$(CC) -pthread $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDASTUFFER): $(OUT)/cudastuffer.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
