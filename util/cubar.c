@@ -172,13 +172,22 @@ int kernel_cardinfo(unsigned idx){
 	char fn[NAME_MAX];
 	int r;
 
-	if((r = snprintf(fn,sizeof(fn),"%s/cards/%u",NVPROCDIR,idx)) < 0){
+	if((r = snprintf(fn,sizeof(fn),"%s/gpus/%u",NVPROCDIR,idx)) < 0){
 		return -1;
 	}
 	if((unsigned)r >= sizeof(fn)){
 		return -1;
 	}
-	return dumpprocfile(fn);
+	if(dumpprocfile(fn)){
+		if((r = snprintf(fn,sizeof(fn),"%s/cards/%u",NVPROCDIR,idx)) < 0){
+			return -1;
+		}
+		if((unsigned)r >= sizeof(fn)){
+			return -1;
+		}
+		return dumpprocfile(fn);
+	}
+	return 0;
 }
 
 int kernel_registry(void){
