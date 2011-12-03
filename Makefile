@@ -57,23 +57,23 @@ $(TAGS): $(CSRC) $(CUDASRC) util/cubar.c $(SRC)/cubar.h
 
 $(CUDAMINIMAL): $(OUT)/cudaminimal.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+	$(CXX) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDAPINNER): $(OUT)/cudapinner.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+	$(CXX) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDASPAWNER): $(OUT)/cudaspawner.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(MPCFLAGS) -o $@ $^ $(LFLAGS)
+	$(CXX) $(MPCFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDASTUFFER): $(OUT)/cudastuffer.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+	$(CXX) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDABOUNDER): $(OUT)/cudabounder.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+	$(CXX) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(OUT)/%: $(OUT)/%.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
