@@ -57,19 +57,19 @@ $(TAGS): $(CSRC) $(CUDASRC) util/cubar.c $(SRC)/cubar.h
 
 $(CUDAMINIMAL): $(OUT)/cudaminimal.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CXX) $(CFLAGS) -o $@ $^ $(NLFLAGS)
+	$(CXX) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDAPINNER): $(OUT)/cudapinner.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CXX) $(CFLAGS) -o $@ $^ $(NLFLAGS)
+	$(CXX) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDASPAWNER): $(OUT)/cudaspawner.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CXX) $(MPCFLAGS) -o $@ $^ $(NLFLAGS)
+	$(CXX) $(MPCFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDASTUFFER): $(OUT)/cudastuffer.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	$(CXX) $(CFLAGS) -o $@ $^ $(NLFLAGS)
+	$(CXX) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 $(CUDABOUNDER): $(OUT)/cudabounder.o $(OUT)/cubar.o
 	@[ -d $(@D) ] || mkdir -p $(@D)
