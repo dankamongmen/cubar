@@ -233,10 +233,9 @@ check_const_ram(const unsigned loops){
 				cudaGetErrorString(err));
 		goto err;
 	}
-	cudaFree(t1); cudaFree(t0);
-	free(h1); free(h0);
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
+	stats(&tv0,&tv1,h0,h1,s);
 
 	printf("  Timing %u vadds (duplicated registers)...",loops);
 	fflush(stdout);
@@ -250,12 +249,12 @@ check_const_ram(const unsigned loops){
 				cudaGetErrorString(err));
 		goto err;
 	}
-	cudaFree(t1); cudaFree(t0);
-	free(h1); free(h0);
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-
 	stats(&tv0,&tv1,h0,h1,s);
+
+	cudaFree(t1); cudaFree(t0);
+	free(h1); free(h0);
 	return 0;
 
 err:
