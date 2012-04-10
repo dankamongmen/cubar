@@ -21,7 +21,7 @@ int kernel_registry(void);
 int kernel_version_str(void);
 int kernel_cardinfo(unsigned);
 
-#define CUDAMAJMIN(v) v / 1000, v % 1000
+#define CUDAMAJMIN(v) (v) / 1000, (v) % 1000
 
 #ifdef __CUDACC__
 
