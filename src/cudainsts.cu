@@ -85,12 +85,8 @@ err:	// cerr ought already be set!
 
 #define ABSIDX (((GIDX) * blockDim.x * blockDim.y * blockDim.z) + BIDX)
 
-__global__ void memkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
-	unsigned z;
-
+__global__ void memkernel(uint64_t *t0,uint64_t *t1){
 	t0[ABSIDX] = clock64();
-	for(z = 0 ; z < loops ; ++z){
-	}
 	t0[ABSIDX] = clock64() - t0[ABSIDX];
 }
 
@@ -250,13 +246,16 @@ stats(const struct timeval *tv0,const struct timeval *tv1,
 		unsigned loops){
 	uintmax_t sumdelt = 0;
 	struct timeval tv;
+	uint64_t res;
 	unsigned z;
 
+	res = *t1;
 	timersub(tv1,tv0,&tv);
 	printf("\tKernel wall time: %ld.%06lds\n",tv.tv_sec,tv.tv_usec);
 	for(z = 0 ; z < n ; ++z){
 		//printf("delt: %lu res: %u\n",t0[z],t1[z]);
 		sumdelt += t0[z];
+		assert(res == t1[z]);
 	}
 	printf("\tMean cycles / thread: %ju cycles / op: %ju\n",sumdelt / n,sumdelt / n / loops);
 }
@@ -284,10 +283,10 @@ check_const_ram(const unsigned loops){
 		return -1;
 	}
 
-	printf("Timing load+store pair...");
+	printf("Timing 64-bit store+load+store...");
 	fflush(stdout);
 	gettimeofday(&tv0,NULL);
-	memkernel<<<dblock,dgrid>>>(t0,t1,loops);
+	memkernel<<<dblock,dgrid>>>(t0,t1);
 	if(cuCtxSynchronize() ||
 			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
 			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
