@@ -9,6 +9,7 @@ SRC:=src
 OUT:=out
 CUDABOUNDER:=out/cudabounder
 CUDADUMP:=out/cudadump
+CUDAINSTS:=out/cudainsts
 CUDAMINIMAL:=out/cudaminimal
 CUDAPINNER:=out/cudapinner
 CUDAQUIRKY:=out/cudaquirky
@@ -33,7 +34,7 @@ TARGBIN?=$(TARGET)/bin
 INSTALL?=install
 NVCC?=$(CUDADIR)/bin/nvcc
 GPUARCH?=compute_20
-GPUCODE?=sm_20 # sm_12,sm_10
+GPUCODE?=sm_20,sm_21 # sm_12,sm_10
 # FIXME restore -Werror!
 CFLAGS+=-O2 -Wall -W -Wextra -march=native -mtune=native -I$(SRC) -I$(CUDAINC)
 MPCFLAGS:=-pthread $(CFLAGS)
@@ -104,7 +105,8 @@ profile: $(PROFDATA)
 PROF:=CUDA_PROFILE_LOG=$(shell pwd)/$(PROFDATA) CUDA_PROFILE=1
 $(PROFDATA): test
 	@[ -d $(@D) ] || mkdir -p $(@D)
-	env $(PROF) out/cudadump
+	env $(PROF) $(CUDADUMP)
+	env $(PROF) $(CUDAINSTS)
 	cat $@
 
 CUDADEVNO?=0
@@ -116,10 +118,11 @@ test: bin
 	#./$(CUDARANGER) $(CUDADEVNO) 0 0x1000
 
 fulltest: test
-	./$(CUDADUMP)
-	./$(CUDAPINNER) 0
-	./$(CUDAQUIRKY)
-	./$(CUDARANGER) $(CUDADEVNO) 0 0x100000000
+	$(CUDADUMP)
+	$(CUDAINSTS)
+	$(CUDAPINNER) 0
+	$(CUDAQUIRKY)
+	$(CUDARANGER) $(CUDADEVNO) 0 0x100000000
 
 clean:
 	rm -rf out $(TAGS) $(wildcard *.dump)
