@@ -491,6 +491,9 @@ int main(int argc,char **argv){
 		if(id_cuda(z,&mem,&tmem,&state)){
 			return EXIT_FAILURE;
 		}
+		if(cudaDeviceSetCacheConfig(cudaFuncCachePreferL1) != cudaSuccess){
+			fprintf(stderr,"Error preferring L1 to shared memory.\n");
+		}
 		if(state != CU_COMPUTEMODE_DEFAULT){
 			printf("  Skipping device %d (put it in shared mode).\n",z);
 			continue;
