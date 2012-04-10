@@ -42,7 +42,7 @@ NCFLAGS+=-O2 --compiler-options -W,-Wall,-Wextra,-march=native,-mtune=native
 NCFLAGS+=-arch $(GPUARCH) -code $(GPUCODE) --ptxas-options=-v -I$(SRC) -I$(CUDAINC)
 LFLAGS:=--as-needed
 NLFLAGS:=--linker-options $(LFLAGS),-R$(CUDARTLIB) -L$(CUDARTLIB) -lcuda -lcudart
-LFLAGS:=$(addprefix -Wl,$(LFLAGS)) -lcuda -lcudart
+LFLAGS:=$(addprefix -Wl,$(LFLAGS)) -R$(CUDARTLIB) -L$(CUDARTLIB) -lcuda -lcudart
 PTXFLAGS:=--ptx
 TAGS:=.tags
 
