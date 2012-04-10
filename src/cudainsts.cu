@@ -88,6 +88,7 @@ err:	// cerr ought already be set!
 __global__ void memkernel(uint64_t *t0,uint64_t *t1){
 	t0[ABSIDX] = clock64();
 	t0[ABSIDX] = clock64() - t0[ABSIDX];
+	t1[ABSIDX] = 0xffu;
 }
 
 __global__ void shlkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
