@@ -119,6 +119,22 @@ __global__ void mulkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	t1[ABSIDX] = clock64() + pc1 + pc;
 }
 
+__global__ void vaddr3kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
+	unsigned z;
+
+	t0[ABSIDX] = clock64();
+	for(z = 0 ; z < loops ; ++z){
+		asm( "vadd.u32.u32.u32.add %0, %1, %2, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
+		asm( "vadd.u32.u32.u32.add %0, %1, %2, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
+		asm( "vadd.u32.u32.u32.add %0, %1, %2, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
+		asm( "vadd.u32.u32.u32.add %0, %1, %2, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
+		asm( "vadd.u32.u32.u32.add %0, %1, %2, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
+		asm( "vadd.u32.u32.u32.add %0, %1, %2, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
+	}
+	t1[ABSIDX] = clock64() + pc1 + pc;
+}
+
 __global__ void vaddkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2,pd = 3,pd1 = 3;
 	unsigned z;
@@ -143,7 +159,7 @@ stats(const struct timeval *tv0,const struct timeval *tv1,
 	unsigned z;
 
 	timersub(tv1,tv0,&tv);
-	printf("Kernel wall time: %u.%06us\n",tv.tv_sec,tv.tv_usec);
+	printf("Kernel wall time: %ld.%06lds\n",tv.tv_sec,tv.tv_usec);
 	for(z = 0 ; z < n ; ++z){
 		//assert(t1[z] > t0[z]);
 		sumdelt += t1[z] - t0[z];
@@ -188,6 +204,7 @@ check_const_ram(const unsigned loops){
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
 	stats(&tv0,&tv1,h0,h1,s);
+
 	printf("  Timing %u muls...",loops);
 	fflush(stdout);
 	gettimeofday(&tv0,NULL);
@@ -203,6 +220,7 @@ check_const_ram(const unsigned loops){
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
 	stats(&tv0,&tv1,h0,h1,s);
+
 	printf("  Timing %u vadds...",loops);
 	fflush(stdout);
 	gettimeofday(&tv0,NULL);
@@ -219,6 +237,24 @@ check_const_ram(const unsigned loops){
 	free(h1); free(h0);
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
+
+	printf("  Timing %u vadds (duplicated registers)...",loops);
+	fflush(stdout);
+	gettimeofday(&tv0,NULL);
+	vaddr3kernel<<<dblock,dgrid>>>(t0,t1,loops);
+	if(cuCtxSynchronize() || cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
+				cudaGetErrorString(err));
+		goto err;
+	}
+	cudaFree(t1); cudaFree(t0);
+	free(h1); free(h0);
+	gettimeofday(&tv1,NULL);
+	printf("good.\n");
+
 	stats(&tv0,&tv1,h0,h1,s);
 	return 0;
 
@@ -228,12 +264,12 @@ err:
 	return -1;
 }
 
-#define LOOPS (0x01fffffe)
+#define LOOPS (0x00fffffeu)
 
 static void
 usage(const char *a0,int status){
 	fprintf(stderr,"usage: %s [loops]\n",a0);
-	fprintf(stderr," default loopcount: %lu\n",LOOPS);
+	fprintf(stderr," default loopcount: %u\n",LOOPS);
 	exit(status);
 }
 

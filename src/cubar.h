@@ -29,7 +29,7 @@ int kernel_cardinfo(unsigned);
 	// nvcc compiler...apologies all around
 
 #define GRID_SIZE 1
-#define BLOCK_SIZE 128
+#define BLOCK_SIZE 192
 
 #include <sys/time.h>
 
