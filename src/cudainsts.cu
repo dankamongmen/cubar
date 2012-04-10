@@ -85,6 +85,69 @@ err:	// cerr ought already be set!
 
 #define ABSIDX (((GIDX) * blockDim.x * blockDim.y * blockDim.z) + BIDX)
 
+__global__ void memkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+	unsigned z;
+
+	t0[ABSIDX] = clock64();
+	for(z = 0 ; z < loops ; ++z){
+	}
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
+}
+
+__global__ void shlkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
+	unsigned z;
+
+
+	t0[ABSIDX] = clock64();
+	for(z = 0 ; z < loops ; ++z){
+		asm( "shl.b32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
+		asm( "shl.b32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
+		asm( "shl.b32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
+		asm( "shl.b32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
+		asm( "shl.b32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
+		asm( "shl.b32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
+	}
+	t1[ABSIDX] = pc1 + pc;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
+}
+
+__global__ void shrkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
+	unsigned z;
+
+
+	t0[ABSIDX] = clock64();
+	for(z = 0 ; z < loops ; ++z){
+		asm( "shr.b32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
+		asm( "shr.b32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
+		asm( "shr.b32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
+		asm( "shr.b32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
+		asm( "shr.b32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
+		asm( "shr.b32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
+	}
+	t1[ABSIDX] = pc1 + pc;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
+}
+
+__global__ void faddkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+	double pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
+	unsigned z;
+
+
+	t0[ABSIDX] = clock64();
+	for(z = 0 ; z < loops ; ++z){
+		asm( "add.f64 %0, %1, %2;" : "=d"(pa) : "d"(pb), "d"(pc) );
+		asm( "add.f64 %0, %1, %2;" : "=d"(pa1) : "d"(pb1), "d"(pc1) );
+		asm( "add.f64 %0, %1, %2;" : "=d"(pb) : "d"(pc), "d"(pa) );
+		asm( "add.f64 %0, %1, %2;" : "=d"(pb1) : "d"(pc1), "d"(pa1) );
+		asm( "add.f64 %0, %1, %2;" : "=d"(pc) : "d"(pa), "d"(pb) );
+		asm( "add.f64 %0, %1, %2;" : "=d"(pc1) : "d"(pa1), "d"(pb1) );
+	}
+	t1[ABSIDX] = pc1 + pc;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
+}
+
 __global__ void addkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
 	unsigned z;
@@ -99,7 +162,26 @@ __global__ void addkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 		asm( "add.u32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
 		asm( "add.u32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
 	}
-	t1[ABSIDX] = clock64() + pc1 + pc;
+	t1[ABSIDX] = pc1 + pc;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
+}
+
+__global__ void add64kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+	uint64_t pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
+	unsigned z;
+
+
+	t0[ABSIDX] = clock64();
+	for(z = 0 ; z < loops ; ++z){
+		asm( "add.u64 %0, %1, %2;" : "=l"(pa) : "l"(pb), "l"(pc) );
+		asm( "add.u64 %0, %1, %2;" : "=l"(pa1) : "l"(pb1), "l"(pc1) );
+		asm( "add.u64 %0, %1, %2;" : "=l"(pb) : "l"(pc), "l"(pa) );
+		asm( "add.u64 %0, %1, %2;" : "=l"(pb1) : "l"(pc1), "l"(pa1) );
+		asm( "add.u64 %0, %1, %2;" : "=l"(pc) : "l"(pa), "l"(pb) );
+		asm( "add.u64 %0, %1, %2;" : "=l"(pc1) : "l"(pa1), "l"(pb1) );
+	}
+	t1[ABSIDX] = pc1 + pc;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
 }
 
 __global__ void mulkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
@@ -109,14 +191,15 @@ __global__ void mulkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 
 	t0[ABSIDX] = clock64();
 	for(z = 0 ; z < loops ; ++z){
-		asm( "mul.hi.u32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
-		asm( "mul.hi.u32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
-		asm( "mul.hi.u32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
-		asm( "mul.hi.u32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
-		asm( "mul.hi.u32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
-		asm( "mul.hi.u32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
+		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
+		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
+		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
+		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
+		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
+		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
 	}
-	t1[ABSIDX] = clock64() + pc1 + pc;
+	t1[ABSIDX] = pc1 + pc;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
 }
 
 __global__ void vaddr3kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
@@ -132,7 +215,8 @@ __global__ void vaddr3kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 		asm( "vadd.u32.u32.u32.add %0, %1, %2, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
 		asm( "vadd.u32.u32.u32.add %0, %1, %2, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
 	}
-	t1[ABSIDX] = clock64() + pc1 + pc;
+	t1[ABSIDX] = pc1 + pc;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
 }
 
 __global__ void vaddkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
@@ -148,23 +232,25 @@ __global__ void vaddkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 		asm( "vadd.u32.u32.u32.add %0, %1, %2, %3;" : "=r"(pc) : "r"(pa), "r"(pb), "r"(pd) );
 		asm( "vadd.u32.u32.u32.add %0, %1, %2, %3;" : "=r"(pc1) : "r"(pa1), "r"(pb1), "r"(pd) );
 	}
-	t1[ABSIDX] = clock64() + pc1 + pc;
+	t1[ABSIDX] = pc1 + pc;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
 }
 
 static void
 stats(const struct timeval *tv0,const struct timeval *tv1,
-		const uint64_t *t0,const uint64_t *t1,unsigned n){
+		const uint64_t *t0,const uint64_t *t1,unsigned n,
+		unsigned loops){
 	uintmax_t sumdelt = 0;
 	struct timeval tv;
 	unsigned z;
 
 	timersub(tv1,tv0,&tv);
-	printf("Kernel wall time: %ld.%06lds\n",tv.tv_sec,tv.tv_usec);
+	printf("\tKernel wall time: %ld.%06lds\n",tv.tv_sec,tv.tv_usec);
 	for(z = 0 ; z < n ; ++z){
-		//assert(t1[z] > t0[z]);
-		sumdelt += t1[z] - t0[z];
+		//printf("delt: %lu res: %u\n",t0[z],t1[z]);
+		sumdelt += t0[z];
 	}
-	printf("Mean cycles / thread: %ju\n",sumdelt / n);
+	printf("\tMean cycles / thread: %ju cycles / op: %ju\n",sumdelt / n,sumdelt / n / loops);
 }
 
 static int
@@ -189,69 +275,168 @@ check_const_ram(const unsigned loops){
 		cudaFree(t0); free(h1); free(h0);
 		return -1;
 	}
-	printf("  Timing %u adds...",loops);
+
+	printf("Timing load+store pair...");
+	fflush(stdout);
+	gettimeofday(&tv0,NULL);
+	memkernel<<<dblock,dgrid>>>(t0,t1,loops);
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
+				cudaGetErrorString(err));
+		goto err;
+	}
+	gettimeofday(&tv1,NULL);
+	printf("good.\n");
+	stats(&tv0,&tv1,h0,h1,s,1);
+
+	printf("Timing %u adds...",loops);
 	fflush(stdout);
 	gettimeofday(&tv0,NULL);
 	addkernel<<<dblock,dgrid>>>(t0,t1,loops);
-	if(cuCtxSynchronize() || cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess){
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
 				cudaGetErrorString(err));
 		goto err;
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s);
+	stats(&tv0,&tv1,h0,h1,s,loops * 6);
 
-	printf("  Timing %u muls...",loops);
+	printf("Timing %u 64-bit adds...",loops);
+	fflush(stdout);
+	gettimeofday(&tv0,NULL);
+	addkernel<<<dblock,dgrid>>>(t0,t1,loops);
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
+				cudaGetErrorString(err));
+		goto err;
+	}
+	gettimeofday(&tv1,NULL);
+	printf("good.\n");
+	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+
+	printf("Timing %u 64-bit floating-point adds...",loops);
+	fflush(stdout);
+	gettimeofday(&tv0,NULL);
+	faddkernel<<<dblock,dgrid>>>(t0,t1,loops);
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
+				cudaGetErrorString(err));
+		goto err;
+	}
+	gettimeofday(&tv1,NULL);
+	printf("good.\n");
+	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+
+	printf("Timing %u muls...",loops);
 	fflush(stdout);
 	gettimeofday(&tv0,NULL);
 	mulkernel<<<dblock,dgrid>>>(t0,t1,loops);
-	if(cuCtxSynchronize() || cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess){
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
 				cudaGetErrorString(err));
 		goto err;
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s);
+	stats(&tv0,&tv1,h0,h1,s,loops * 6);
 
-	printf("  Timing %u vadds...",loops);
+	printf("Timing %u vadds...",loops);
 	fflush(stdout);
 	gettimeofday(&tv0,NULL);
 	vaddkernel<<<dblock,dgrid>>>(t0,t1,loops);
-	if(cuCtxSynchronize() || cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess){
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
 				cudaGetErrorString(err));
 		goto err;
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s);
+	stats(&tv0,&tv1,h0,h1,s,loops * 6);
 
-	printf("  Timing %u vadds (duplicated registers)...",loops);
+	printf("Timing %u vadds (duplicated registers)...",loops);
 	fflush(stdout);
 	gettimeofday(&tv0,NULL);
 	vaddr3kernel<<<dblock,dgrid>>>(t0,t1,loops);
-	if(cuCtxSynchronize() || cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess){
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
 		cudaError_t err;
 
 		err = cudaGetLastError();
-		fprintf(stderr,"\n  Error verifying constant CUDA memory (%s?)\n",
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
 				cudaGetErrorString(err));
 		goto err;
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s);
+	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+
+	printf("Timing %u shls...",loops);
+	fflush(stdout);
+	gettimeofday(&tv0,NULL);
+	shlkernel<<<dblock,dgrid>>>(t0,t1,loops);
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
+				cudaGetErrorString(err));
+		goto err;
+	}
+	gettimeofday(&tv1,NULL);
+	printf("good.\n");
+	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+
+	printf("Timing %u shrs...",loops);
+	fflush(stdout);
+	gettimeofday(&tv0,NULL);
+	shrkernel<<<dblock,dgrid>>>(t0,t1,loops);
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
+				cudaGetErrorString(err));
+		goto err;
+	}
+	gettimeofday(&tv1,NULL);
+	printf("good.\n");
+	stats(&tv0,&tv1,h0,h1,s,loops * 6);
 
 	cudaFree(t1); cudaFree(t0);
 	free(h1); free(h0);
@@ -263,7 +448,7 @@ err:
 	return -1;
 }
 
-#define LOOPS (0x00fffffeu)
+#define LOOPS (0x00010000u)
 
 static void
 usage(const char *a0,int status){
@@ -290,9 +475,9 @@ int main(int argc,char **argv){
 	}
 	printf("CUDA device count: %d\n",count);
 	for(z = 0 ; z < count ; ++z){
-		uint32_t hostresarr[GRID_SIZE * BLOCK_SIZE];
+		uint64_t hostresarr[GRID_SIZE * BLOCK_SIZE];
 		unsigned mem,tmem;
-		uint32_t *resarr;
+		uint64_t *resarr;
 		int state;
 
 		printf(" %03d ",z);
