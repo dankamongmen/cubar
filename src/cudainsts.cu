@@ -91,42 +91,133 @@ __global__ void memkernel(uint64_t *t0,uint64_t *t1){
 	t1[ABSIDX] = 0xffu;
 }
 
-__global__ void shlkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
-	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
-	unsigned z;
+#define ILP6OP2(inst,type) \
+	unsigned pa,pb = 1,pa1,pb1 = 1; \
+	unsigned pa2,pb2 = 3; \
+	unsigned pa3,pb3 = 10; \
+	unsigned pa4,pb4 = 100; \
+	unsigned pa5,pb5 = 1010; \
+	unsigned z; \
+\
+	t0[ABSIDX] = clock64(); \
+	for(z = 0 ; z < loops ; ++z){ \
+		asm( \
+		inst"."type" %0, %1;\t\n" \
+		inst"."type" %2, %3;\t\n" \
+		inst"."type" %4, %5;\t\n" \
+		inst"."type" %6, %7;\t\n" \
+		inst"."type" %8, %9;\t\n" \
+		inst"."type" %10, %11;\t\n" \
+		inst"."type" %1, %0;\t\n" \
+		inst"."type" %3, %2;\t\n" \
+		inst"."type" %5, %4;\t\n" \
+		inst"."type" %7, %6;\t\n" \
+		inst"."type" %9, %8;\t\n" \
+		inst"."type" %11, %10;\t\n" \
+		inst"."type" %0, %1;\t\n" \
+		inst"."type" %2, %3;\t\n" \
+		inst"."type" %4, %5;\t\n" \
+		inst"."type" %6, %7;\t\n" \
+		inst"."type" %8, %9;\t\n" \
+		inst"."type" %10, %11;\t\n" \
+		: "=r"(pa), "+r"(pb), \
+		  "=r"(pa1), "+r"(pb1), \
+		  "=r"(pa2), "+r"(pb2), \
+		  "=r"(pa3), "+r"(pb3), \
+		  "=r"(pa4), "+r"(pb4), \
+		  "=r"(pa5), "+r"(pb5) \
+		); \
+	} \
+	t1[ABSIDX] = pb + pb1 + pb2 + pb3 + pb4 + pb5; \
+	t0[ABSIDX] = clock64() - t0[ABSIDX]
 
+//#pragma unroll 128
+#define ILP6OP3(inst,type) \
+	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2; \
+	unsigned pa2,pb2 = 3,pc2 = 4; \
+	unsigned pa3,pb3 = 10,pc3 = 20; \
+	unsigned pa4,pb4 = 100,pc4 = 201; \
+	unsigned pa5,pb5 = 1010,pc5 = 2001; \
+	unsigned z; \
+\
+	t0[ABSIDX] = clock64(); \
+	for(z = 0 ; z < loops ; ++z){ \
+		asm( \
+		inst"."type" %0, %1, %2;\t\n" \
+		inst"."type" %3, %4, %5;\t\n" \
+		inst"."type" %6, %7, %8;\t\n" \
+		inst"."type" %9, %10, %11;\t\n" \
+		inst"."type" %12, %13, %14;\t\n" \
+		inst"."type" %15, %16, %17;\t\n" \
+		inst"."type" %1, %2, %0;\t\n" \
+		inst"."type" %4, %5, %3;\t\n" \
+		inst"."type" %7, %8, %6;\t\n" \
+		inst"."type" %10, %11, %9;\t\n" \
+		inst"."type" %13, %12, %14;\t\n" \
+		inst"."type" %16, %15, %17;\t\n" \
+		inst"."type" %2, %1, %0;\t\n" \
+		inst"."type" %5, %4, %3;\t\n" \
+		inst"."type" %8, %7, %6;\t\n" \
+		inst"."type" %11, %10, %9;\t\n" \
+		inst"."type" %14, %13, %12;\t\n" \
+		inst"."type" %17, %16, %15;\t\n" \
+		: "=r"(pa), "+r"(pb), "+r"(pc) \
+		  "=r"(pa1), "+r"(pb1), "+r"(pc1) \
+		  "=r"(pa2), "+r"(pb2), "+r"(pc2) \
+		  "=r"(pa3), "+r"(pb3), "+r"(pc3) \
+		  "=r"(pa4), "+r"(pb4), "+r"(pc4) \
+		  "=r"(pa5), "+r"(pb5), "+r"(pc5) \
+		); \
+	} \
+	t1[ABSIDX] = pc + pc1 + pc2 + pc3 + pc4 + pc5; \
+	t0[ABSIDX] = clock64() - t0[ABSIDX]
 
-	t0[ABSIDX] = clock64();
-#pragma unroll 128
-	for(z = 0 ; z < loops ; ++z){
-		asm( "shl.b32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
-		asm( "shl.b32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
-		asm( "shl.b32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
-		asm( "shl.b32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
-		asm( "shl.b32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
-		asm( "shl.b32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
-	}
-	t1[ABSIDX] = pc1 + pc;
-	t0[ABSIDX] = clock64() - t0[ABSIDX];
-}
+#define ILP6OP3W64(inst,type) \
+	uint64_t pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2; \
+	uint64_t pa2,pb2 = 3,pc2 = 4; \
+	uint64_t pa3,pb3 = 10,pc3 = 20; \
+	uint64_t pa4,pb4 = 100,pc4 = 201; \
+	uint64_t pa5,pb5 = 1010,pc5 = 2001; \
+	unsigned z; \
+\
+	t0[ABSIDX] = clock64(); \
+	for(z = 0 ; z < loops ; ++z){ \
+		asm( \
+		inst"."type" %0, %1, %2;\t\n" \
+		inst"."type" %3, %4, %5;\t\n" \
+		inst"."type" %6, %7, %8;\t\n" \
+		inst"."type" %9, %10, %11;\t\n" \
+		inst"."type" %12, %13, %14;\t\n" \
+		inst"."type" %15, %16, %17;\t\n" \
+		inst"."type" %1, %2, %0;\t\n" \
+		inst"."type" %4, %5, %3;\t\n" \
+		inst"."type" %7, %8, %6;\t\n" \
+		inst"."type" %10, %11, %9;\t\n" \
+		inst"."type" %13, %12, %14;\t\n" \
+		inst"."type" %16, %15, %17;\t\n" \
+		inst"."type" %2, %1, %0;\t\n" \
+		inst"."type" %5, %4, %3;\t\n" \
+		inst"."type" %8, %7, %6;\t\n" \
+		inst"."type" %11, %10, %9;\t\n" \
+		inst"."type" %14, %13, %12;\t\n" \
+		inst"."type" %17, %16, %15;\t\n" \
+		: "=l"(pa), "+l"(pb), "+l"(pc) \
+		  "=l"(pa1), "+l"(pb1), "+l"(pc1) \
+		  "=l"(pa2), "+l"(pb2), "+l"(pc2) \
+		  "=l"(pa3), "+l"(pb3), "+l"(pc3) \
+		  "=l"(pa4), "+l"(pb4), "+l"(pc4) \
+		  "=l"(pa5), "+l"(pb5), "+l"(pc5) \
+		); \
+	} \
+	t1[ABSIDX] = pc + pc1 + pc2 + pc3 + pc4 + pc5; \
+	t0[ABSIDX] = clock64() - t0[ABSIDX]
 
 __global__ void shrkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
-	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
-	unsigned z;
+	ILP6OP3("shr","b32");
+}
 
-
-	t0[ABSIDX] = clock64();
-#pragma unroll 128
-	for(z = 0 ; z < loops ; ++z){
-		asm( "shr.b32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
-		asm( "shr.b32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
-		asm( "shr.b32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
-		asm( "shr.b32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
-		asm( "shr.b32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
-		asm( "shr.b32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
-	}
-	t1[ABSIDX] = pc1 + pc;
-	t0[ABSIDX] = clock64() - t0[ABSIDX];
+__global__ void shlkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+	ILP6OP3("shl","b32");
 }
 
 __global__ void faddkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
@@ -162,154 +253,45 @@ __global__ void adddepkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
 		asm( "add.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
 		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
 	}
 	t1[ABSIDX] = pa;
 	t0[ABSIDX] = clock64() - t0[ABSIDX];
 }
 
 __global__ void addkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
-	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
-	unsigned pa2,pb2 = 3,pc2 = 4;
-	unsigned pa3,pb3 = 10,pc3 = 20;
-	unsigned pa4,pb4 = 100,pc4 = 201;
-	unsigned pa5,pb5 = 1010,pc5 = 2001;
-	unsigned z;
-
-
-	t0[ABSIDX] = clock64();
-#pragma unroll 128
-	for(z = 0 ; z < loops ; ++z){
-		asm(
-		"add.u32 %0, %1, %2;\t\n"
-		"add.u32 %3, %4, %5;\t\n"
-		"add.u32 %6, %7, %8;\t\n"
-		"add.u32 %9, %10, %11;\t\n"
-		"add.u32 %12, %13, %14;\t\n"
-		"add.u32 %15, %16, %17;\t\n"
-		"add.u32 %1, %2, %0;\t\n"
-		"add.u32 %4, %5, %3;\t\n"
-		"add.u32 %7, %8, %6;\t\n"
-		"add.u32 %10, %11, %9;\t\n"
-		"add.u32 %13, %12, %14;\t\n"
-		"add.u32 %16, %15, %17;\t\n"
-		"add.u32 %2, %1, %0;\t\n"
-		"add.u32 %5, %4, %3;\t\n"
-		"add.u32 %8, %7, %6;\t\n"
-		"add.u32 %11, %10, %9;\t\n"
-		"add.u32 %14, %13, %12;\t\n"
-		"add.u32 %17, %16, %15;\t\n"
-		: "=r"(pa), "+r"(pb), "+r"(pc)
-		  "=r"(pa1), "+r"(pb1), "+r"(pc1)
-		  "=r"(pa2), "+r"(pb2), "+r"(pc2)
-		  "=r"(pa3), "+r"(pb3), "+r"(pc3)
-		  "=r"(pa4), "+r"(pb4), "+r"(pc4)
-		  "=r"(pa5), "+r"(pb5), "+r"(pc5)
-		);
-		/*asm( "add.u32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
-		asm( "add.u32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
-		asm( "add.u32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
-		asm( "add.u32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
-		asm( "add.u32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
-		asm( "add.u32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );*/
-	}
-	//t1[ABSIDX] = pc1 + pc;
-	t1[ABSIDX] = pc + pc1 + pc2 + pc3 + pc4 + pc5;
-	t0[ABSIDX] = clock64() - t0[ABSIDX];
+	ILP6OP3("add","u32");
 }
 
 __global__ void addcckernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
-	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
-	unsigned z;
-
-
-	t0[ABSIDX] = clock64();
-#pragma unroll 128
-	for(z = 0 ; z < loops ; ++z){
-		asm( "add.cc.u32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
-		asm( "add.cc.u32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
-		asm( "add.cc.u32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
-		asm( "add.cc.u32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
-		asm( "add.cc.u32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
-		asm( "add.cc.u32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
-	}
-	t1[ABSIDX] = pc1 + pc;
-	t0[ABSIDX] = clock64() - t0[ABSIDX];
+	ILP6OP3("add.cc","u32");
 }
 
 __global__ void add64kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
-	uint64_t pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
-	unsigned z;
-
-
-	t0[ABSIDX] = clock64();
-#pragma unroll 128
-	for(z = 0 ; z < loops ; ++z){
-		asm( "add.u64 %0, %1, %2;" : "=l"(pa) : "l"(pb), "l"(pc) );
-		asm( "add.u64 %0, %1, %2;" : "=l"(pa1) : "l"(pb1), "l"(pc1) );
-		asm( "add.u64 %0, %1, %2;" : "=l"(pb) : "l"(pc), "l"(pa) );
-		asm( "add.u64 %0, %1, %2;" : "=l"(pb1) : "l"(pc1), "l"(pa1) );
-		asm( "add.u64 %0, %1, %2;" : "=l"(pc) : "l"(pa), "l"(pb) );
-		asm( "add.u64 %0, %1, %2;" : "=l"(pc1) : "l"(pa1), "l"(pb1) );
-	}
-	t1[ABSIDX] = pc1 + pc;
-	t0[ABSIDX] = clock64() - t0[ABSIDX];
+	ILP6OP3W64("add","u64");
 }
 
 __global__ void mulkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
-	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
-	unsigned z;
-
-
-	t0[ABSIDX] = clock64();
-#pragma unroll 128
-	for(z = 0 ; z < loops ; ++z){
-		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
-		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
-		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
-		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
-		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
-		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
-	}
-	t1[ABSIDX] = pc1 + pc;
-	t0[ABSIDX] = clock64() - t0[ABSIDX];
+	ILP6OP3("mul.lo","u32");
 }
 
 __global__ void divkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
-	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
-	unsigned z;
-
-
-	t0[ABSIDX] = clock64();
-#pragma unroll 128
-	for(z = 0 ; z < loops ; ++z){
-		asm( "div.u32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
-		asm( "div.u32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
-		asm( "div.u32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
-		asm( "div.u32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
-		asm( "div.u32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
-		asm( "div.u32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
-	}
-	t1[ABSIDX] = pc1 + pc;
-	t0[ABSIDX] = clock64() - t0[ABSIDX];
+	ILP6OP3("div","u32");
 }
 
 __global__ void popkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
-	unsigned pa,pb = 1,pa1,pb1 = 1;
-	unsigned z;
-
-
-	t0[ABSIDX] = clock64();
-#pragma unroll 128
-	for(z = 0 ; z < loops ; ++z){
-		asm( "popc.b32 %0, %1;" : "=r"(pa) : "r"(pb) );
-		asm( "popc.b32 %0, %1;" : "=r"(pa1) : "r"(pb1) );
-		asm( "popc.b32 %0, %1;" : "=r"(pb) : "r"(pa) );
-		asm( "popc.b32 %0, %1;" : "=r"(pb1) : "r"(pa1) );
-		asm( "popc.b32 %0, %1;" : "=r"(pa) : "r"(pa) );
-		asm( "popc.b32 %0, %1;" : "=r"(pa1) : "r"(pa1) );
-	}
-	t1[ABSIDX] = pa1 + pa;
-	t0[ABSIDX] = clock64() - t0[ABSIDX];
+	ILP6OP2("popc","b32");
 }
 
 __global__ void vaddr3kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
@@ -426,7 +408,7 @@ test_inst_throughput(const unsigned loops){
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+	stats(&tv0,&tv1,h0,h1,s,loops * 18);
 
 	printf("Timing %u adds...",loops);
 	fflush(stdout);
@@ -462,7 +444,7 @@ test_inst_throughput(const unsigned loops){
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+	stats(&tv0,&tv1,h0,h1,s,loops * 18);
 
 	printf("Timing %u 64-bit adds...",loops);
 	fflush(stdout);
@@ -480,7 +462,7 @@ test_inst_throughput(const unsigned loops){
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+	stats(&tv0,&tv1,h0,h1,s,loops * 18);
 
 	printf("Timing %u 64-bit floating-point adds...",loops);
 	fflush(stdout);
@@ -516,7 +498,7 @@ test_inst_throughput(const unsigned loops){
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+	stats(&tv0,&tv1,h0,h1,s,loops * 18);
 
 	printf("Timing %u divs...",loops);
 	fflush(stdout);
@@ -534,7 +516,7 @@ test_inst_throughput(const unsigned loops){
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+	stats(&tv0,&tv1,h0,h1,s,loops * 18);
 
 	printf("Timing %u pops...",loops);
 	fflush(stdout);
@@ -552,7 +534,7 @@ test_inst_throughput(const unsigned loops){
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+	stats(&tv0,&tv1,h0,h1,s,loops * 18);
 
 	printf("Timing %u vadds...",loops);
 	fflush(stdout);
@@ -606,7 +588,7 @@ test_inst_throughput(const unsigned loops){
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+	stats(&tv0,&tv1,h0,h1,s,loops * 18);
 
 	printf("Timing %u shrs...",loops);
 	fflush(stdout);
@@ -624,7 +606,7 @@ test_inst_throughput(const unsigned loops){
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+	stats(&tv0,&tv1,h0,h1,s,loops * 18);
 
 	cudaFree(t1); cudaFree(t0);
 	free(h1); free(h0);

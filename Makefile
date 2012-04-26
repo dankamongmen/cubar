@@ -38,7 +38,7 @@ GPUCODE?=sm_20,sm_21 # sm_12,sm_10
 # FIXME restore -Werror!
 CFLAGS+=-O2 -Wall -W -Wextra -march=native -mtune=native -I$(SRC) -I$(CUDAINC)
 MPCFLAGS:=-pthread $(CFLAGS)
-NCFLAGS+=-O3 --compiler-options -W,-Wall,-Wextra,-march=native,-mtune=native
+NCFLAGS+=--compiler-options -W,-Wall,-Wextra,-march=native,-mtune=native
 NCFLAGS+=-arch $(GPUARCH) -code $(GPUCODE) --ptxas-options=-v,-O3,-dlcm=cg -I$(SRC) -I$(CUDAINC)
 LFLAGS:=--as-needed
 NLFLAGS:=--linker-options $(LFLAGS),-R$(CUDARTLIB) -L$(CUDARTLIB) -lcuda -lcudart
