@@ -97,7 +97,7 @@ __global__ void shlkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 
 
 	t0[ABSIDX] = clock64();
-#pragma unroll 16
+#pragma unroll 128
 	for(z = 0 ; z < loops ; ++z){
 		asm( "shl.b32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
 		asm( "shl.b32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
@@ -116,7 +116,7 @@ __global__ void shrkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 
 
 	t0[ABSIDX] = clock64();
-#pragma unroll 16
+#pragma unroll 128
 	for(z = 0 ; z < loops ; ++z){
 		asm( "shr.b32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
 		asm( "shr.b32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
@@ -135,7 +135,7 @@ __global__ void faddkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 
 
 	t0[ABSIDX] = clock64();
-#pragma unroll 16
+#pragma unroll 128
 	for(z = 0 ; z < loops ; ++z){
 		asm( "add.f64 %0, %1, %2;" : "=d"(pa) : "d"(pb), "d"(pc) );
 		asm( "add.f64 %0, %1, %2;" : "=d"(pa1) : "d"(pb1), "d"(pc1) );
@@ -148,13 +148,32 @@ __global__ void faddkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	t0[ABSIDX] = clock64() - t0[ABSIDX];
 }
 
+__global__ void adddepkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+	unsigned pa = 0,pb = 1;
+	unsigned z;
+
+
+	t0[ABSIDX] = clock64();
+#pragma unroll 128
+	for(z = 0 ; z < loops ; ++z){
+		asm( "add.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "add.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+	}
+	t1[ABSIDX] = pa;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
+}
+
 __global__ void addkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
 	unsigned z;
 
 
 	t0[ABSIDX] = clock64();
-#pragma unroll 16
+#pragma unroll 128
 	for(z = 0 ; z < loops ; ++z){
 		asm( "add.u32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
 		asm( "add.u32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
@@ -173,7 +192,7 @@ __global__ void add64kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 
 
 	t0[ABSIDX] = clock64();
-#pragma unroll 16
+#pragma unroll 128
 	for(z = 0 ; z < loops ; ++z){
 		asm( "add.u64 %0, %1, %2;" : "=l"(pa) : "l"(pb), "l"(pc) );
 		asm( "add.u64 %0, %1, %2;" : "=l"(pa1) : "l"(pb1), "l"(pc1) );
@@ -186,13 +205,33 @@ __global__ void add64kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	t0[ABSIDX] = clock64() - t0[ABSIDX];
 }
 
+__global__ void mul64kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+	unsigned pb = 1,pc = 2,pb1 = 1,pc1 = 2;
+	uint64_t pa,pa1;
+	unsigned z;
+
+
+	t0[ABSIDX] = clock64();
+#pragma unroll 128
+	for(z = 0 ; z < loops ; ++z){
+		asm( "mul.wide.u32 %0, %1, %2;" : "=l"(pa) : "r"(pb), "r"(pc) );
+		asm( "mul.wide.u32 %0, %1, %2;" : "=l"(pa1) : "r"(pb1), "r"(pc1) );
+		asm( "mul.wide.u32 %0, %1, %2;" : "=l"(pa) : "r"(pc), "r"(pb) );
+		asm( "mul.wide.u32 %0, %1, %2;" : "=l"(pa1) : "r"(pc1), "r"(pb1) );
+		asm( "mul.wide.u32 %0, %1, %2;" : "=l"(pa) : "r"(pc), "r"(pb) );
+		asm( "mul.wide.u32 %0, %1, %2;" : "=l"(pa1) : "r"(pc1), "r"(pb1) );
+	}
+	t1[ABSIDX] = pa1 + pa;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
+}
+
 __global__ void mulkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
 	unsigned z;
 
 
 	t0[ABSIDX] = clock64();
-#pragma unroll 16
+#pragma unroll 128
 	for(z = 0 ; z < loops ; ++z){
 		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
 		asm( "mul.lo.u32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
@@ -210,7 +249,7 @@ __global__ void vaddr3kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	unsigned z;
 
 	t0[ABSIDX] = clock64();
-#pragma unroll 16
+#pragma unroll 128
 	for(z = 0 ; z < loops ; ++z){
 		asm( "vadd.u32.u32.u32.add %0, %1, %2, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
 		asm( "vadd.u32.u32.u32.add %0, %1, %2, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
@@ -228,7 +267,7 @@ __global__ void vaddkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	unsigned z;
 
 	t0[ABSIDX] = clock64();
-#pragma unroll 16
+#pragma unroll 128
 	for(z = 0 ; z < loops ; ++z){
 		asm( "vadd.u32.u32.u32.add %0, %1, %2, %3;" : "=r"(pa) : "r"(pb), "r"(pc), "r"(pd) );
 		asm( "vadd.u32.u32.u32.add %0, %1, %2, %3;" : "=r"(pa1) : "r"(pb1), "r"(pc1), "r"(pd1) );
@@ -258,7 +297,8 @@ stats(const struct timeval *tv0,const struct timeval *tv1,
 		sumdelt += t0[z];
 		assert(res == t1[z]);
 	}
-	printf("\tMean cycles / thread: %ju cycles / op: %ju\n",sumdelt / n,sumdelt / n / loops);
+	printf("\tMean cycles / thread: %ju cycles / op: %ju\n",
+			sumdelt / n,sumdelt / n / loops);
 }
 
 static int
@@ -301,6 +341,24 @@ check_const_ram(const unsigned loops){
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
 	stats(&tv0,&tv1,h0,h1,s,1);
+
+	printf("Timing %u dependent adds...",loops);
+	fflush(stdout);
+	gettimeofday(&tv0,NULL);
+	adddepkernel<<<dblock,dgrid>>>(t0,t1,loops);
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
+				cudaGetErrorString(err));
+		goto err;
+	}
+	gettimeofday(&tv1,NULL);
+	printf("good.\n");
+	stats(&tv0,&tv1,h0,h1,s,loops * 6);
 
 	printf("Timing %u adds...",loops);
 	fflush(stdout);
@@ -360,6 +418,24 @@ check_const_ram(const unsigned loops){
 	fflush(stdout);
 	gettimeofday(&tv0,NULL);
 	mulkernel<<<dblock,dgrid>>>(t0,t1,loops);
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
+				cudaGetErrorString(err));
+		goto err;
+	}
+	gettimeofday(&tv1,NULL);
+	printf("good.\n");
+	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+
+	printf("Timing %u 64-bit muls...",loops);
+	fflush(stdout);
+	gettimeofday(&tv0,NULL);
+	mul64kernel<<<dblock,dgrid>>>(t0,t1,loops);
 	if(cuCtxSynchronize() ||
 			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
 			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
@@ -456,7 +532,7 @@ err:
 	return -1;
 }
 
-#define LOOPS (0x00010000u)
+#define LOOPS (0x00080000u)
 
 static void
 usage(const char *a0,int status){
