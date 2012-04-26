@@ -339,7 +339,7 @@ stats(const struct timeval *tv0,const struct timeval *tv1,
 }
 
 static int
-check_const_ram(const unsigned loops){
+test_inst_throughput(const unsigned loops){
 	dim3 dblock(BLOCK_SIZE,1,1);
 	struct timeval tv0, tv1;
 	dim3 dgrid(1,1,1);
@@ -653,7 +653,7 @@ int main(int argc,char **argv){
 				cudaGetErrorString(cudaGetLastError()));
 			return EXIT_FAILURE;
 		}
-		if(check_const_ram(loops)){
+		if(test_inst_throughput(loops)){
 			return EXIT_FAILURE;
 		}
 		printf(" Success.\n");
