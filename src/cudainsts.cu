@@ -169,20 +169,51 @@ __global__ void adddepkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 
 __global__ void addkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	unsigned pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2;
+	unsigned pa2,pb2 = 3,pc2 = 4;
+	unsigned pa3,pb3 = 10,pc3 = 20;
+	unsigned pa4,pb4 = 100,pc4 = 201;
+	unsigned pa5,pb5 = 1010,pc5 = 2001;
 	unsigned z;
 
 
 	t0[ABSIDX] = clock64();
 #pragma unroll 128
 	for(z = 0 ; z < loops ; ++z){
-		asm( "add.u32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
+		asm(
+		"add.u32 %0, %1, %2;\t\n"
+		"add.u32 %3, %4, %5;\t\n"
+		"add.u32 %6, %7, %8;\t\n"
+		"add.u32 %9, %10, %11;\t\n"
+		"add.u32 %12, %13, %14;\t\n"
+		"add.u32 %15, %16, %17;\t\n"
+		"add.u32 %1, %2, %0;\t\n"
+		"add.u32 %4, %5, %3;\t\n"
+		"add.u32 %7, %8, %6;\t\n"
+		"add.u32 %10, %11, %9;\t\n"
+		"add.u32 %13, %12, %14;\t\n"
+		"add.u32 %16, %15, %17;\t\n"
+		"add.u32 %2, %1, %0;\t\n"
+		"add.u32 %5, %4, %3;\t\n"
+		"add.u32 %8, %7, %6;\t\n"
+		"add.u32 %11, %10, %9;\t\n"
+		"add.u32 %14, %13, %12;\t\n"
+		"add.u32 %17, %16, %15;\t\n"
+		: "=r"(pa), "+r"(pb), "+r"(pc)
+		  "=r"(pa1), "+r"(pb1), "+r"(pc1)
+		  "=r"(pa2), "+r"(pb2), "+r"(pc2)
+		  "=r"(pa3), "+r"(pb3), "+r"(pc3)
+		  "=r"(pa4), "+r"(pb4), "+r"(pc4)
+		  "=r"(pa5), "+r"(pb5), "+r"(pc5)
+		);
+		/*asm( "add.u32 %0, %1, %2;" : "=r"(pa) : "r"(pb), "r"(pc) );
 		asm( "add.u32 %0, %1, %2;" : "=r"(pa1) : "r"(pb1), "r"(pc1) );
 		asm( "add.u32 %0, %1, %2;" : "=r"(pb) : "r"(pc), "r"(pa) );
 		asm( "add.u32 %0, %1, %2;" : "=r"(pb1) : "r"(pc1), "r"(pa1) );
 		asm( "add.u32 %0, %1, %2;" : "=r"(pc) : "r"(pa), "r"(pb) );
-		asm( "add.u32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );
+		asm( "add.u32 %0, %1, %2;" : "=r"(pc1) : "r"(pa1), "r"(pb1) );*/
 	}
-	t1[ABSIDX] = pc1 + pc;
+	//t1[ABSIDX] = pc1 + pc;
+	t1[ABSIDX] = pc + pc1 + pc2 + pc3 + pc4 + pc5;
 	t0[ABSIDX] = clock64() - t0[ABSIDX];
 }
 
@@ -413,7 +444,7 @@ test_inst_throughput(const unsigned loops){
 	}
 	gettimeofday(&tv1,NULL);
 	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s,loops * 6);
+	stats(&tv0,&tv1,h0,h1,s,loops * 18);
 
 	printf("Timing %u add.ccs...",loops);
 	fflush(stdout);
