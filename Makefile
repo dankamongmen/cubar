@@ -128,11 +128,11 @@ clean:
 	rm -rf out $(TAGS) $(wildcard *.dump)
 
 install:
-	$(INSTALL) -d $(TARGBIN)
-	$(INSTALL) $(BIN) $(TARGBIN)
+	$(INSTALL) -d $(DESTDIR)$(TARGBIN)
+	$(INSTALL) $(BIN) $(DESTDIR)$(TARGBIN)
 
 uninstall:
-	rm -rf $(addprefix $(TARGBIN),$(BIN))
+	rm -rf $(addprefix $(DESTDIR)$(TARGBIN),$(BIN))
 
 $(LOCALMAKE):
 	@[ -d $(@D) ] || mkdir -p $(@D)
