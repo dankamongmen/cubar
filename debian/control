@@ -1,0 +1,15 @@
+Source: cubar
+Section: unknown
+Priority: extra
+Maintainer: Nick Black <nick.black@sprezzatech.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.2
+Homepage: <insert the upstream URL, if relevant>
+#Vcs-Git: git://git.debian.org/collab-maint/cubar.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/cubar.git;a=summary
+
+Package: cubar
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: CUBAR
+ The CUBAR suite of CUDA reverse-engineering tools.

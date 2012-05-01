@@ -1,0 +1,5 @@
+cubar (41-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Nick Black <nick.black@sprezzatech.com>  Tue, 01 May 2012 05:22:10 -0400
