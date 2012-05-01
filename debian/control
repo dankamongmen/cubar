@@ -11,5 +11,8 @@ Vcs-Git: https://github.com/dankamongmen/cubar
 Package: cubar
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: CUBAR
- The CUBAR suite of CUDA reverse-engineering tools.
+Description: CUBAR reverse-engineering toolkit
+The CUBAR suite of CUDA reverse-engineering tools was authored to investigate
+the security properties -- primarily the means and parameters of memory
+protection, and the division of protection between soft- and hardware -- of
+CUDA on NVIDIA hardware since the G80 architecture.
