@@ -85,7 +85,7 @@ err:	// cerr ought already be set!
 
 #define ABSIDX (((GIDX) * blockDim.x * blockDim.y * blockDim.z) + BIDX)
 
-__global__ void memkernel(uint64_t *t0,uint64_t *t1){
+__global__ void memkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1){
 	t0[ABSIDX] = clock64();
 	t0[ABSIDX] = clock64() - t0[ABSIDX];
 	t1[ABSIDX] = 0xffu;
@@ -214,19 +214,19 @@ __global__ void memkernel(uint64_t *t0,uint64_t *t1){
 	t1[ABSIDX] = pc + pc1 + pc2 + pc3 + pc4 + pc5; \
 	t0[ABSIDX] = clock64() - t0[ABSIDX]
 
-__global__ void shrkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void shrkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP3("shr","b32",uint32_t,"r");
 }
 
-__global__ void shlkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void shlkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP3("shl","b32",uint32_t,"r");
 }
 
-__global__ void faddkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void faddkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP3("add","f64",double,"d");
 }
 
-__global__ void adddepkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void adddepkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	unsigned pa = 0,pb = 1;
 	unsigned z;
 
@@ -257,31 +257,31 @@ __global__ void adddepkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
 	t0[ABSIDX] = clock64() - t0[ABSIDX];
 }
 
-__global__ void addkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void addkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP3("add","u32",uint32_t,"r");
 }
 
-__global__ void addcckernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void addcckernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP3("add.cc","u32",uint32_t,"r");
 }
 
-__global__ void add64kernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void add64kernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP3("add","u64",uint64_t,"l");
 }
 
-__global__ void mulkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void mulkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP3("mul.lo","u32",uint32_t,"r");
 }
 
-__global__ void divkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void divkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP3("div","u32",uint32_t,"r");
 }
 
-__global__ void popkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void popkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP2("popc","b32",uint32_t,"r");
 }
 
-__global__ void vaddkernel(uint64_t *t0,uint64_t *t1,const unsigned loops){
+__global__ void vaddkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP4("vadd","u32.u32.u32.add",uint32_t,"r");
 }
 
