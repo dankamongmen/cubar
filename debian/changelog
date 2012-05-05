@@ -1,3 +1,10 @@
+cubar (41.2-1) unstable; urgency=low
+
+  * Remove unused template files.
+  * Apply __restrict__ throughout throughput-testing kernels.
+
+ -- nick black <nick.black@sprezzatech.com>  Sat, 05 May 2012 10:57:20 -0400
+
 cubar (41-1.1) unstable; urgency=low
 
   * Fix up description.
@@ -6,6 +13,6 @@ cubar (41-1.1) unstable; urgency=low
 
 cubar (41-1) unstable; urgency=low
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+  * Initial release.
 
  -- Nick Black <nick.black@sprezzatech.com>  Tue, 01 May 2012 05:22:10 -0400
