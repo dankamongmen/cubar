@@ -1,6 +1,6 @@
 Source: cubar
-Section: unknown
-Priority: extra
+Section: devel
+Priority: optional
 Maintainer: Nick Black <nick.black@sprezzatech.com>
 Build-Depends: debhelper (>= 8.0.0)
 Standards-Version: 3.9.2
@@ -11,7 +11,7 @@ Vcs-Git: https://github.com/dankamongmen/cubar
 Package: cubar
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: CUBAR reverse-engineering toolkit
+Description: CUDA reverse-engineering toolkit
  The CUBAR suite of CUDA reverse-engineering tools was authored to investigate
  the security properties -- primarily the means and parameters of memory
  protection, and the division of protection between soft- and hardware -- of
