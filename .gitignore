@@ -2,3 +2,7 @@
 Makefile.local
 out
 .tags
+debian/cubar.debhelper.log
+debian/cubar.substvars
+debian/cubar
+debian/files
