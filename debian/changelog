@@ -1,3 +1,9 @@
+cubar (42.1-1) unstable; urgency=low
+
+  * New upstream version for CUDA 4.2.
+
+ -- nick black <nick.black@sprezzatech.com>  Fri, 11 May 2012 13:18:44 -0400
+
 cubar (41.2-1) unstable; urgency=low
 
   * Remove unused template files.
