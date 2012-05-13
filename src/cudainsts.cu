@@ -289,21 +289,32 @@ static void
 stats(const struct timeval *tv0,const struct timeval *tv1,
 		const uint64_t *t0,const uint64_t *t1,unsigned n,
 		unsigned loops){
-	uintmax_t sumdelt = 0;
+	uintmax_t sumdelt = 0,min = 0,max = 0;
 	struct timeval tv;
 	uint64_t res;
 	unsigned z;
 
 	res = *t1;
 	timersub(tv1,tv0,&tv);
-	printf("\tKernel wall time: %ld.%06lds\n",tv.tv_sec,tv.tv_usec);
+	printf("\tKernel wall time: %ld.%06lds Threads: %u\n",
+			tv.tv_sec,tv.tv_usec,n);
 	for(z = 0 ; z < n ; ++z){
 		//printf("delt: %lu res: %u\n",t0[z],t1[z]);
 		sumdelt += t0[z];
+		if(t0[z] < min || min == 0){
+			min = t0[z];
+		}
+		if(t0[z] > max){
+			max = t0[z];
+		}
 		assert(res == t1[z]);
 	}
+	printf("\tMin cycles / thread: %ju cycles / op: %ju\n",
+			min,min / loops);
 	printf("\tMean cycles / thread: %ju cycles / op: %ju\n",
 			sumdelt / n,sumdelt / n / loops);
+	printf("\tMax cycles / thread: %ju cycles / op: %ju\n",
+			max,max / loops);
 }
 
 static int
@@ -546,12 +557,12 @@ test_inst_throughput(const unsigned loops){
 	stats(&tv0,&tv1,h0,h1,s,loops * 18);
 
 	cudaFree(t1); cudaFree(t0);
-	free(h1); free(h0);
+	delete[] h1; delete[] h0;
 	return 0;
 
 err:
 	cudaFree(t1); cudaFree(t0);
-	free(h1); free(h0);
+	delete[] h1; delete[] h0;
 	return -1;
 }
 
