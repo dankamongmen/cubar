@@ -307,7 +307,7 @@ stats(const struct timeval *tv0,const struct timeval *tv1,
 	}
 	printf("\tMin cycles / thread: %ju cycles / op: %ju\n",
 			min,min / loops);
-	printf("\tMean cycles / thread: %ju cycles / op: %ju\n",
+	printf("\tAvg cycles / thread: %ju cycles / op: %ju\n",
 			sumdelt / n,sumdelt / n / loops);
 	printf("\tMax cycles / thread: %ju cycles / op: %ju\n",
 			max,max / loops);
