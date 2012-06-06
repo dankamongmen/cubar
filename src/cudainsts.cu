@@ -226,6 +226,37 @@ __global__ void faddkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1
 	ILP6OP3("add","f64",double,"d");
 }
 
+__global__ void shrdepkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
+	unsigned pa = 0,pb = 1;
+	unsigned z;
+
+
+	t0[ABSIDX] = clock64();
+#pragma unroll 128
+	for(z = 0 ; z < loops ; ++z){
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pa) : "r"(pb) );
+		asm( "shr.u32 %0, %1, %0;" : "+r"(pb) : "r"(pa) );
+	}
+	t1[ABSIDX] = pa;
+	t0[ABSIDX] = clock64() - t0[ABSIDX];
+}
+
 __global__ void adddepkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	unsigned pa = 0,pb = 1;
 	unsigned z;
@@ -520,6 +551,24 @@ test_inst_throughput(const unsigned loops){
 	fflush(stdout);
 	gettimeofday(&tv0,NULL);
 	shrkernel<<<dblock,dgrid>>>(t0,t1,loops);
+	if(cuCtxSynchronize() ||
+			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
+			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
+		cudaError_t err;
+
+		err = cudaGetLastError();
+		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
+				cudaGetErrorString(err));
+		goto err;
+	}
+	gettimeofday(&tv1,NULL);
+	printf("good.\n");
+	stats(&tv0,&tv1,h0,h1,s,loops * 18);
+
+	printf("Timing %u dependent shrs...",loops);
+	fflush(stdout);
+	gettimeofday(&tv0,NULL);
+	shrdepkernel<<<dblock,dgrid>>>(t0,t1,loops);
 	if(cuCtxSynchronize() ||
 			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
 			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
