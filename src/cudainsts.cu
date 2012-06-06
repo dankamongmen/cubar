@@ -273,10 +273,6 @@ __global__ void mulkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,
 	ILP6OP3("mul.lo","u32",uint32_t,"r");
 }
 
-__global__ void divkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
-	ILP6OP3("div","u32",uint32_t,"r");
-}
-
 __global__ void popkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
 	ILP6OP2("popc","b32",uint32_t,"r");
 }
@@ -452,24 +448,6 @@ test_inst_throughput(const unsigned loops){
 	fflush(stdout);
 	gettimeofday(&tv0,NULL);
 	mulkernel<<<dblock,dgrid>>>(t0,t1,loops);
-	if(cuCtxSynchronize() ||
-			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
-			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
-		cudaError_t err;
-
-		err = cudaGetLastError();
-		fprintf(stderr,"\n  Error timing instruction (%s?)\n",
-				cudaGetErrorString(err));
-		goto err;
-	}
-	gettimeofday(&tv1,NULL);
-	printf("good.\n");
-	stats(&tv0,&tv1,h0,h1,s,loops * 18);
-
-	printf("Timing %u divs...",loops);
-	fflush(stdout);
-	gettimeofday(&tv0,NULL);
-	divkernel<<<dblock,dgrid>>>(t0,t1,loops);
 	if(cuCtxSynchronize() ||
 			cudaMemcpy(h0,t0,s * sizeof(*h0),cudaMemcpyDeviceToHost) != cudaSuccess ||
 			cudaMemcpy(h1,t1,s * sizeof(*h1),cudaMemcpyDeviceToHost) != cudaSuccess){
