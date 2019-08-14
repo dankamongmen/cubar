@@ -90,7 +90,7 @@ __global__ void memkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1)
 	t1[ABSIDX] = 0xffu;
 }
 
-#define ILP6OP2(inst,ptxtype,type,constraint) \
+#define ILP6OP2(inst,ptxtype,type) \
 	uint32_t pa,pb = 1,pa1,pb1 = 1; \
 	uint32_t pa2,pb2 = 3; \
 	uint32_t pa3,pb3 = 10; \
@@ -101,37 +101,37 @@ __global__ void memkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1)
 	t0[ABSIDX] = clock64(); \
 	for(z = 0 ; z < loops ; ++z){ \
 		asm( \
-		inst"."ptxtype" %0, %1;\t\n" \
-		inst"."ptxtype" %2, %3;\t\n" \
-		inst"."ptxtype" %4, %5;\t\n" \
-		inst"."ptxtype" %6, %7;\t\n" \
-		inst"."ptxtype" %8, %9;\t\n" \
-		inst"."ptxtype" %10, %11;\t\n" \
-		inst"."ptxtype" %1, %0;\t\n" \
-		inst"."ptxtype" %3, %2;\t\n" \
-		inst"."ptxtype" %5, %4;\t\n" \
-		inst"."ptxtype" %7, %6;\t\n" \
-		inst"."ptxtype" %9, %8;\t\n" \
-		inst"."ptxtype" %11, %10;\t\n" \
-		inst"."ptxtype" %0, %1;\t\n" \
-		inst"."ptxtype" %2, %3;\t\n" \
-		inst"."ptxtype" %4, %5;\t\n" \
-		inst"."ptxtype" %6, %7;\t\n" \
-		inst"."ptxtype" %8, %9;\t\n" \
-		inst"."ptxtype" %10, %11;\t\n" \
-		: "="constraint""(pa), "+"constraint""(pb), \
-		  "="constraint""(pa1), "+"constraint""(pb1), \
-		  "="constraint""(pa2), "+"constraint""(pb2), \
-		  "="constraint""(pa3), "+"constraint""(pb3), \
-		  "="constraint""(pa4), "+"constraint""(pb4), \
-		  "="constraint""(pa5), "+"constraint""(pb5) \
+		    inst "." ptxtype " %0, %1\n\t" \
+		    inst "." ptxtype " %2, %3\n\t" \
+		    inst "." ptxtype " %4, %5\n\t" \
+		    inst "." ptxtype " %6, %7\n\t" \
+		    inst "." ptxtype " %8, %9\n\t" \
+		    inst "." ptxtype " %10, %11\n\t" \
+		    inst "." ptxtype " %1, %0\n\t" \
+		    inst "." ptxtype " %3, %2\n\t" \
+		    inst "." ptxtype " %5, %4\n\t" \
+		    inst "." ptxtype " %7, %6\n\t" \
+		    inst "." ptxtype " %9, %8\n\t" \
+		    inst "." ptxtype " %11, %10\n\t" \
+		    inst "." ptxtype " %0, %1\n\t" \
+		    inst "." ptxtype " %2, %3\n\t" \
+		    inst "." ptxtype " %4, %5\n\t" \
+		    inst "." ptxtype " %6, %7\n\t" \
+		    inst "." ptxtype " %8, %9\n\t" \
+		    inst "." ptxtype " %10, %11" \
+		    : "=r"(pa), "+r"(pb), \
+		      "=r"(pa1), "+r"(pb1), \
+		      "=r"(pa2), "+r"(pb2), \
+		      "=r"(pa3), "+r"(pb3), \
+		      "=r"(pa4), "+r"(pb4), \
+		      "=r"(pa5), "+r"(pb5) \
 		); \
-	} \
+	}; \
 	t1[ABSIDX] = pb + pb1 + pb2 + pb3 + pb4 + pb5; \
 	t0[ABSIDX] = clock64() - t0[ABSIDX]
 
 //#pragma unroll 128
-#define ILP6OP3(inst,ptxtype,type,constraint) \
+#define ILP6OP3(inst,type,constraint) \
 	type pa,pb = 1,pc = 2,pa1,pb1 = 1,pc1 = 2; \
 	type pa2,pb2 = 3,pc2 = 4; \
 	type pa3,pb3 = 10,pc3 = 20; \
@@ -142,30 +142,30 @@ __global__ void memkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1)
 	t0[ABSIDX] = clock64(); \
 	for(z = 0 ; z < loops ; ++z){ \
 		asm( \
-		inst"."ptxtype" %0, %1, %2;\t\n" \
-		inst"."ptxtype" %3, %4, %5;\t\n" \
-		inst"."ptxtype" %6, %7, %8;\t\n" \
-		inst"."ptxtype" %9, %10, %11;\t\n" \
-		inst"."ptxtype" %12, %13, %14;\t\n" \
-		inst"."ptxtype" %15, %16, %17;\t\n" \
-		inst"."ptxtype" %1, %2, %0;\t\n" \
-		inst"."ptxtype" %4, %5, %3;\t\n" \
-		inst"."ptxtype" %7, %8, %6;\t\n" \
-		inst"."ptxtype" %10, %11, %9;\t\n" \
-		inst"."ptxtype" %13, %12, %14;\t\n" \
-		inst"."ptxtype" %16, %15, %17;\t\n" \
-		inst"."ptxtype" %2, %1, %0;\t\n" \
-		inst"."ptxtype" %5, %4, %3;\t\n" \
-		inst"."ptxtype" %8, %7, %6;\t\n" \
-		inst"."ptxtype" %11, %10, %9;\t\n" \
-		inst"."ptxtype" %14, %13, %12;\t\n" \
-		inst"."ptxtype" %17, %16, %15;\t\n" \
-		: "="constraint""(pa), "+"constraint""(pb), "+"constraint""(pc) \
-		  "="constraint""(pa1), "+"constraint""(pb1), "+"constraint""(pc1) \
-		  "="constraint""(pa2), "+"constraint""(pb2), "+"constraint""(pc2) \
-		  "="constraint""(pa3), "+"constraint""(pb3), "+"constraint""(pc3) \
-		  "="constraint""(pa4), "+"constraint""(pb4), "+"constraint""(pc4) \
-		  "="constraint""(pa5), "+"constraint""(pb5), "+"constraint""(pc5) \
+		inst " %0, %1, %2\n\t" \
+		inst " %3, %4, %5\n\t" \
+		inst " %6, %7, %8\n\t" \
+		inst " %9, %10, %11\n\t" \
+		inst " %12, %13, %14\n\t" \
+		inst " %15, %16, %17\n\t" \
+		inst " %1, %2, %0\n\t" \
+		inst " %4, %5, %3\n\t" \
+		inst " %7, %8, %6\n\t" \
+		inst " %10, %11, %9\n\t" \
+		inst " %13, %12, %14\n\t" \
+		inst " %16, %15, %17\n\t" \
+		inst " %2, %1, %0\n\t" \
+		inst " %5, %4, %3\n\t" \
+		inst " %8, %7, %6\n\t" \
+		inst " %11, %10, %9\n\t" \
+		inst " %14, %13, %12\n\t" \
+		inst " %17, %16, %15" \
+		: "=" constraint (pa), "+" constraint (pb), "+" constraint (pc) \
+		  "=" constraint (pa1), "+" constraint (pb1), "+" constraint (pc1) \
+		  "=" constraint (pa2), "+" constraint (pb2), "+" constraint (pc2) \
+		  "=" constraint (pa3), "+" constraint (pb3), "+" constraint (pc3) \
+		  "=" constraint (pa4), "+" constraint (pb4), "+" constraint (pc4) \
+		  "=" constraint (pa5), "+" constraint (pb5), "+" constraint (pc5) \
 		); \
 	} \
 	t1[ABSIDX] = pc + pc1 + pc2 + pc3 + pc4 + pc5; \
@@ -182,47 +182,47 @@ __global__ void memkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1)
 	t0[ABSIDX] = clock64(); \
 	for(z = 0 ; z < loops ; ++z){ \
 		asm( \
-		inst"."ptxtype" %0, %1, %2, %18;\t\n" \
-		inst"."ptxtype" %3, %4, %5, %19;\t\n" \
-		inst"."ptxtype" %6, %7, %8, %20;\t\n" \
-		inst"."ptxtype" %9, %10, %11, %21;\t\n" \
-		inst"."ptxtype" %12, %13, %14, %22;\t\n" \
-		inst"."ptxtype" %15, %16, %17, %23;\t\n" \
-		inst"."ptxtype" %1, %2, %0, %18;\t\n" \
-		inst"."ptxtype" %4, %5, %3, %19;\t\n" \
-		inst"."ptxtype" %7, %8, %6, %20;\t\n" \
-		inst"."ptxtype" %10, %11, %9, %21;\t\n" \
-		inst"."ptxtype" %13, %12, %14, %22;\t\n" \
-		inst"."ptxtype" %16, %15, %17, %23;\t\n" \
-		inst"."ptxtype" %2, %1, %0, %18;\t\n" \
-		inst"."ptxtype" %5, %4, %3, %19;\t\n" \
-		inst"."ptxtype" %8, %7, %6, %20;\t\n" \
-		inst"."ptxtype" %11, %10, %9, %21;\t\n" \
-		inst"."ptxtype" %14, %13, %12, %22;\t\n" \
-		inst"."ptxtype" %17, %16, %15, %23;\t\n" \
-		: "="constraint""(pa), "+"constraint""(pb), "+"constraint""(pc) \
-		  "="constraint""(pa1), "+"constraint""(pb1), "+"constraint""(pc1) \
-		  "="constraint""(pa2), "+"constraint""(pb2), "+"constraint""(pc2) \
-		  "="constraint""(pa3), "+"constraint""(pb3), "+"constraint""(pc3) \
-		  "="constraint""(pa4), "+"constraint""(pb4), "+"constraint""(pc4) \
-		  "="constraint""(pa5), "+"constraint""(pb5), "+"constraint""(pc5) \
-		: constraint""(pd), constraint""(pd1), constraint""(pd2) \
-		  constraint""(pd3), constraint""(pd4), constraint""(pd5) \
+		inst "." ptxtype " %0, %1, %2, %18\n\t" \
+		inst "." ptxtype " %3, %4, %5, %19\n\t" \
+		inst "." ptxtype " %6, %7, %8, %20\n\t" \
+		inst "." ptxtype " %9, %10, %11, %21\n\t" \
+		inst "." ptxtype " %12, %13, %14, %22\n\t" \
+		inst "." ptxtype " %15, %16, %17, %23\n\t" \
+		inst "." ptxtype " %1, %2, %0, %18\n\t" \
+		inst "." ptxtype " %4, %5, %3, %19\n\t" \
+		inst "." ptxtype " %7, %8, %6, %20\n\t" \
+		inst "." ptxtype " %10, %11, %9, %21\n\t" \
+		inst "." ptxtype " %13, %12, %14, %22\n\t" \
+		inst "." ptxtype " %16, %15, %17, %23\n\t" \
+		inst "." ptxtype " %2, %1, %0, %18\n\t" \
+		inst "." ptxtype " %5, %4, %3, %19\n\t" \
+		inst "." ptxtype " %8, %7, %6, %20\n\t" \
+		inst "." ptxtype " %11, %10, %9, %21\n\t" \
+		inst "." ptxtype " %14, %13, %12, %22\n\t" \
+		inst "." ptxtype " %17, %16, %15, %23" \
+		: "=" constraint (pa), "+" constraint (pb), "+" constraint (pc), \
+		  "=" constraint (pa1), "+" constraint (pb1), "+" constraint (pc1), \
+		  "=" constraint (pa2), "+" constraint (pb2), "+" constraint (pc2), \
+		  "=" constraint (pa3), "+" constraint (pb3), "+" constraint (pc3), \
+		  "=" constraint (pa4), "+" constraint (pb4), "+" constraint (pc4), \
+		  "=" constraint (pa5), "+" constraint (pb5), "+" constraint (pc5) \
+		: constraint(pd), constraint(pd1), constraint(pd2), \
+		  constraint(pd3), constraint(pd4), constraint(pd5) \
 		); \
 	} \
 	t1[ABSIDX] = pc + pc1 + pc2 + pc3 + pc4 + pc5; \
 	t0[ABSIDX] = clock64() - t0[ABSIDX]
 
 __global__ void shrkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
-	ILP6OP3("shr","b32",uint32_t,"r");
+	ILP6OP3("shr.b32",uint32_t,"r");
 }
 
 __global__ void shlkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
-	ILP6OP3("shl","b32",uint32_t,"r");
+	ILP6OP3("shl.b32",uint32_t,"r");
 }
 
 __global__ void faddkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
-	ILP6OP3("add","f64",double,"d");
+	ILP6OP3("add.f64",double,"d");
 }
 
 __global__ void popdepkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
@@ -319,23 +319,23 @@ __global__ void adddepkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ 
 }
 
 __global__ void addkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
-	ILP6OP3("add","u32",uint32_t,"r");
+	ILP6OP3("add.u32",uint32_t,"r");
 }
 
 __global__ void addcckernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
-	ILP6OP3("add.cc","u32",uint32_t,"r");
+	ILP6OP3("add.cc.u32",uint32_t,"r");
 }
 
 __global__ void add64kernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
-	ILP6OP3("add","u64",uint64_t,"l");
+	ILP6OP3("add.u64",uint64_t,"l");
 }
 
 __global__ void mulkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
-	ILP6OP3("mul.lo","u32",uint32_t,"r");
+	ILP6OP3("mul.lo.u32",uint32_t,"r");
 }
 
 __global__ void popkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
-	ILP6OP2("popc","b32",uint32_t,"r");
+	ILP6OP2("popc","b32",uint32_t);
 }
 
 __global__ void vaddkernel(uint64_t * __restrict__ t0,uint64_t * __restrict__ t1,const unsigned loops){
