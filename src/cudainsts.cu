@@ -62,7 +62,6 @@ id_cuda(int dev,unsigned *mem,unsigned *tmem,int *state){
 		dprop.integrated ? "Integrated" : "Standalone",(char *)str,
 		*mem / (1024 * 1024) + !!(*mem / (1024 * 1024)),
 		*tmem / (1024 * 1024) + !!(*tmem / (1024 * 1024)),
-		*state == CU_COMPUTEMODE_EXCLUSIVE ? "(exclusive)" :
 		*state == CU_COMPUTEMODE_PROHIBITED ? "(prohibited)" :
 		*state == CU_COMPUTEMODE_DEFAULT ? "(shared)" :
 		"(unknown compute mode)") < 0){

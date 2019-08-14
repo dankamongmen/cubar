@@ -33,8 +33,8 @@ TARGBIN?=$(TARGET)/bin
 
 INSTALL?=install
 NVCC?=$(CUDADIR)/bin/nvcc
-GPUARCH?=compute_20
-GPUCODE?=sm_20,sm_21 # sm_12,sm_10
+GPUARCH?=compute_61
+GPUCODE?=sm_61,sm_70 # sm_20,sm_12,sm_10
 # FIXME restore -Werror!
 CFLAGS+=-O2 -Wall -W -Wextra -march=native -mtune=native -I$(SRC) -I$(CUDAINC)
 MPCFLAGS:=-pthread $(CFLAGS)
