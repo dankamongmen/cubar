@@ -211,7 +211,7 @@ cuda_cardinfo(const cudadev *cd){
 	}
 	cerr = cuDeviceGetAttribute(&attr,CU_DEVICE_ATTRIBUTE_COMPUTE_MODE,c);
 	if(cerr != CUDA_SUCCESS || printf("Compute mode:\t %s\n",
-			attr == CU_COMPUTEMODE_EXCLUSIVE ? "Exclusive" :
+			attr == CU_COMPUTEMODE_EXCLUSIVE_PROCESS ? "Exclusive" :
 			attr == CU_COMPUTEMODE_PROHIBITED ? "Prohibited" :
 			attr == CU_COMPUTEMODE_DEFAULT ? "Shared" : "Unknown") < 0){;
 		return cerr;
